@@ -1,0 +1,8 @@
+*                       @david-portilla
+/src/engine/            @edenjiga
+/src/app/api/engine/    @edenjiga
+/src/game/              @bizarrecoding
+/src/app/api/game/      @bizarrecoding
+/src/web/               @david-portilla
+/src/contracts/         @david-portilla @edenjiga @bizarrecoding
+/docs/requirements.md   @david-portilla @edenjiga @bizarrecoding
