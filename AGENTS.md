@@ -50,7 +50,7 @@ Ask your human which owner they are if it is not obvious.
 
 ## Shared skills
 
-Shared skills live in `skills/<name>/SKILL.md` (Agent Skills format). Link them into your tool's skills folder if it supports skills. Personal skills stay in your own environment and are not committed.
+Shared skills live in `skills/<name>/SKILL.md` (Agent Skills format); `.claude/skills` and `.agents/skills` are symlinks to that folder. If your tool reads another path, link it locally. Personal skills stay in your own environment and are not committed. Catalogue: `skills/README.md`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
