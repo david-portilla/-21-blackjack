@@ -83,12 +83,30 @@ test("AC-13.1 history lists the deposit with its balance", async ({ page }) => {
   await expect(page.getByText("No finished runs yet.")).toBeVisible();
 });
 
-test("AC-14.1 the table is reachable from the lobby", async ({ page }) => {
+test("AC-14.1 AC-14.2 a full round from the lobby: bet, play, settle, history", async ({ page }) => {
   await signIn(page);
+  await deposit(page, "100");
+  await expect(balance(page)).toHaveText("100");
   await page.getByRole("link", { name: "Take a seat at the table" }).click();
   await expect(page).toHaveURL("/play");
-  await expect(page.getByText("Preview of the table")).toBeVisible();
-  await expect(page.getByRole("img", { name: "Hidden card" })).toBeVisible();
+
+  await page.getByLabel("Your bet").fill("10");
+  await page.getByRole("button", { name: "Deal" }).click();
+  // The deck is random: stand on every hand until the round settles (a natural settles at once).
+  const stand = page.getByRole("button", { name: "Stand" });
+  const dealAgain = page.getByRole("button", { name: "Deal" });
+  await expect(stand.or(dealAgain)).toBeVisible();
+  while (await stand.isVisible()) {
+    await stand.click();
+    await expect(stand.or(dealAgain)).toBeVisible();
+  }
+  await expect(dealAgain).toBeVisible();
+  await expect(page.getByTestId("hand").first()).toContainText(/Win|Blackjack|Push|Loss/);
+  await expect(balance(page)).toHaveText(/^(90|100|110)$/);
+
+  await page.getByRole("link", { name: "History" }).click();
+  await expect(page.getByRole("row").filter({ hasText: "BET" })).toHaveCount(1);
+  await expect(page.getByRole("row").filter({ hasText: "PAYOUT" })).toHaveCount(1);
 });
 
 test("the session and balance survive a reload", async ({ page }) => {

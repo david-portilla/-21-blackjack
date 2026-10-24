@@ -1,9 +1,26 @@
 // In-browser stand-in for the engine HTTP API, so the site can be built before Edgar's routes exist.
-// Enabled with NEXT_PUBLIC_ENGINE_FAKE=1. Follows the same rules the real engine must follow (R1, R2).
+// Enabled with NEXT_PUBLIC_ENGINE_FAKE=1. Follows the same rules the real engine must follow (R1, R2, R11, R12).
+// debit, settle and closeRun mirror the in-process CasinoEngine; only the in-browser game emulation calls them.
+import type { Outcome, TxKind } from "@/contracts/types";
 import { EngineError, type EngineClient } from "./engine-client";
 import type { Account, Run, Transaction } from "./engine-types";
 
-type KeyValueStore = Pick<Storage, "getItem" | "setItem">;
+export type KeyValueStore = Pick<Storage, "getItem" | "setItem">;
+
+export type FakeEngine = EngineClient & {
+  debit(input: {
+    roundId: string;
+    handId: string;
+    kind: "BET" | "DOUBLE" | "SPLIT";
+    amount: number;
+    idempotencyKey: string;
+  }): Promise<Transaction>;
+  settle(input: { roundId: string; handId: string; outcome: Outcome; idempotencyKey: string }): Promise<Transaction>;
+  closeRun(input: { runId: string; roundIds: string[]; roundsSurvived: number }): Promise<Run>;
+};
+
+const DEBITS: TxKind[] = ["BET", "DOUBLE", "SPLIT"];
+const RETURN_MULTIPLIER: Record<Outcome, number> = { win: 2, blackjack: 2, push: 1, loss: 0 };
 
 type State = {
   accounts: Record<string, Account>;
@@ -15,7 +32,7 @@ type State = {
 
 const KEY = "blackjack.fakeEngine";
 
-export function createFakeEngineClient(store: () => KeyValueStore, now = () => new Date()): EngineClient {
+export function createFakeEngineClient(store: () => KeyValueStore, now = () => new Date()): FakeEngine {
   const load = (): State =>
     JSON.parse(store().getItem(KEY) ?? "null") ?? {
       accounts: {},
@@ -29,6 +46,20 @@ export function createFakeEngineClient(store: () => KeyValueStore, now = () => n
     const account = s.session ? s.accounts[s.session] : undefined;
     if (!account) throw new EngineError("UNAUTHENTICATED", "Sign in first");
     return account;
+  };
+  const byKey = (s: State, key: string) => s.transactions.find((t) => t.transactionId === s.idempotency[key]);
+  const record = (s: State, account: Account, key: string, fields: Omit<Transaction, "transactionId" | "accountId" | "balanceAfter" | "createdAt">) => {
+    const tx: Transaction = {
+      transactionId: crypto.randomUUID(),
+      accountId: account.accountId,
+      ...fields,
+      balanceAfter: account.balance,
+      createdAt: now().toISOString(),
+    };
+    s.transactions.unshift(tx);
+    s.idempotency[key] = tx.transactionId;
+    save(s);
+    return tx;
   };
 
   return {
@@ -54,7 +85,7 @@ export function createFakeEngineClient(store: () => KeyValueStore, now = () => n
     async deposit(amount, idempotencyKey) {
       const s = load();
       const account = signedIn(s);
-      const prior = s.transactions.find((t) => t.transactionId === s.idempotency[idempotencyKey]);
+      const prior = byKey(s, idempotencyKey);
       if (prior) {
         if (prior.amount !== amount) throw new EngineError("IDEMPOTENCY_CONFLICT", "Key reused with another amount");
         return prior;
@@ -63,18 +94,7 @@ export function createFakeEngineClient(store: () => KeyValueStore, now = () => n
         throw new EngineError("INVALID_AMOUNT", "Deposit must be a positive whole number");
       }
       account.balance += amount;
-      const tx: Transaction = {
-        transactionId: crypto.randomUUID(),
-        accountId: account.accountId,
-        kind: "DEPOSIT",
-        amount,
-        balanceAfter: account.balance,
-        createdAt: now().toISOString(),
-      };
-      s.transactions.unshift(tx);
-      s.idempotency[idempotencyKey] = tx.transactionId;
-      save(s);
-      return tx;
+      return record(s, account, idempotencyKey, { kind: "DEPOSIT", amount });
     },
 
     async transactions() {
@@ -87,6 +107,49 @@ export function createFakeEngineClient(store: () => KeyValueStore, now = () => n
       const s = load();
       const account = signedIn(s);
       return s.runs.filter((r) => r.accountId === account.accountId);
+    },
+
+    // Check and debit in one step: on any error nothing changes (AC-9.4, AC-10.7).
+    async debit({ roundId, handId, kind, amount, idempotencyKey }) {
+      const s = load();
+      const account = signedIn(s);
+      const prior = byKey(s, idempotencyKey);
+      if (prior) {
+        if (prior.amount !== amount) throw new EngineError("IDEMPOTENCY_CONFLICT", "Key reused with another amount");
+        return prior;
+      }
+      if (!Number.isInteger(amount) || amount <= 0) throw new EngineError("INVALID_AMOUNT", "Stake must be a positive whole number");
+      if (account.balance < amount) throw new EngineError("INSUFFICIENT_FUNDS", "Not enough credits");
+      account.balance -= amount;
+      return record(s, account, idempotencyKey, { kind, amount, roundId, handId });
+    },
+
+    // The payout comes from the stakes recorded against the hand, never from the caller (AC-11.3).
+    async settle({ roundId, handId, outcome, idempotencyKey }) {
+      const s = load();
+      const account = signedIn(s);
+      const prior = byKey(s, idempotencyKey);
+      if (prior) return prior;
+      const stake = s.transactions
+        .filter((t) => t.handId === handId && DEBITS.includes(t.kind))
+        .reduce((sum, t) => sum + t.amount, 0);
+      const amount = stake * RETURN_MULTIPLIER[outcome];
+      account.balance += amount;
+      return record(s, account, idempotencyKey, { kind: "PAYOUT", amount, roundId, handId, outcome });
+    },
+
+    async closeRun({ runId, roundIds, roundsSurvived }) {
+      const s = load();
+      const account = signedIn(s);
+      const prior = s.runs.find((r) => r.runId === runId);
+      if (prior) return prior;
+      const net = s.transactions
+        .filter((t) => t.accountId === account.accountId && t.roundId && roundIds.includes(t.roundId))
+        .reduce((sum, t) => sum + (DEBITS.includes(t.kind) ? -t.amount : t.amount), 0);
+      const run: Run = { runId, accountId: account.accountId, roundsSurvived, net, endedAt: now().toISOString() };
+      s.runs.unshift(run);
+      save(s);
+      return run;
     },
   };
 }

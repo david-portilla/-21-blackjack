@@ -28,7 +28,7 @@ Root `AGENTS.md` applies. Local rules below are written by the owner.
 - Forms that move money keep one idempotency key per intent: generate it when the amount changes, reuse it on retry (see the deposit form in `lobby/page.tsx`).
 - Show `EngineError.message` to the player; branch on `EngineError.code`, never on message text.
 - Style only with the theme: `bj-*` colors, `font-display` / `font-mono`, `.bj-paper`, `.bj-button`, `.bj-input`, `.bj-candle-glow`. No raw hex, no `neutral-*` grays. Inscryption is a mood reference: never copy its assets or fonts.
-- `/play` renders Heriberto's `BlackjackTable` and passes `onMoneyChanged={refresh}`. Do not reimplement game logic or call `/api/game/*` from site code.
+- `/play` renders Heriberto's `BlackjackTable` and passes `onMoneyChanged={refresh}`. Until it exists, `/play` uses `src/web/fake-game/` (only with the fake engine, D-016). That folder is a temporary stand-in: do not grow it into a second game, do not import it outside `/play`, and delete it when `BlackjackTable` lands. Never call `/api/game/*` from site code.
 - Do not edit `src/game/`, `src/engine/` or `src/app/api/`. Missing something there: open an issue labelled `needs:edgar` or `needs:heriberto`.
 
 ## How to test

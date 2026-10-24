@@ -195,7 +195,7 @@ Defined in `src/app/globals.css`. Use the tokens so the table and the site look 
 
 Inscryption is a mood reference only: draw or generate your own art, never copy its assets.
 
-Visual pieces you can import (no logic, take them or leave them): `PlayingCard` (`@/web/ui/playing-card`, renders a `CardView`, hidden card included), `Candles` (`@/web/ui/candles`, `lit` of 3), and `TableView` (`@/web/ui/table-view`, renders a whole `RoundView` with action buttons). `/play` shows `TablePreview`, a static `RoundView` sample, until `BlackjackTable` lands.
+Visual pieces you can import (no logic, take them or leave them): `PlayingCard` (`@/web/ui/playing-card`, renders a `CardView`, hidden card included), `Candles` (`@/web/ui/candles`, `lit` of 3), and `TableView` (`@/web/ui/table-view`, renders a whole `RoundView` with action buttons). Until `BlackjackTable` lands, `/play` runs an in-browser emulation of the round API on the fake engine (`src/web/fake-game/`, D-016) and a static `TablePreview` otherwise. Heriberto: its tests (`fake-game.test.ts`) use fixed decks for double, split, split aces, naturals and soft 17; reuse the scenarios if useful. Your server-side game is the source of truth.
 
 ## Fixtures
 
