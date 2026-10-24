@@ -216,14 +216,14 @@ export function createFakeGame(
           hand.status = "stood";
           break;
         case "double":
-          await engine.debit({ roundId, handId, kind: "DOUBLE", amount: hand.stake, idempotencyKey: `double:${handId}` });
+          await engine.debit({ roundId, handId, kind: "DOUBLE", idempotencyKey: `double:${handId}` });
           hand.stake *= 2;
           hand.cards.push(draw(round));
           hand.status = handTotal(hand.cards).total > 21 ? "busted" : "finished";
           break;
         case "split": {
           const rightId = `${roundId}:1`;
-          await engine.debit({ roundId, handId: rightId, kind: "SPLIT", amount: hand.stake, idempotencyKey: `split:${rightId}` });
+          await engine.debit({ roundId, handId: rightId, kind: "SPLIT", idempotencyKey: `split:${rightId}` });
           const second = hand.cards.pop() as Card;
           const aces = second.rank === "A";
           round.hands.push({ handId: rightId, cards: [second], stake: hand.stake, status: "playing", hits: 0, splitAces: false });

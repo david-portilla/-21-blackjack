@@ -1,19 +1,5 @@
-// Mirror of the engine section of src/contracts/README.md, until Edgar publishes the engine types.
-import type { Outcome, TxKind } from "@/contracts/types";
-
-export type Account = { accountId: string; username: string; balance: number };
-
-export type Transaction = {
-  transactionId: string;
-  accountId: string;
-  kind: TxKind;
-  amount: number;
-  roundId?: string;
-  handId?: string;
-  outcome?: Outcome;
-  balanceAfter: number;
-  createdAt: string;
-};
+// Engine types: Account and Transaction come from Edgar's contract. Run is still a proposal (R16), mirrored here.
+export type { Account, Transaction } from "@/contracts/engine";
 
 export type Run = {
   runId: string;

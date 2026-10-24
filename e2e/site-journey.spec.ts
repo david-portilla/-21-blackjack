@@ -2,13 +2,20 @@ import { expect, test, type Page } from "@playwright/test";
 
 // The player journey through the site (R1, R2, R13, R14). Runs against the fake engine by default.
 
+const REAL_ENGINE = process.env.E2E_ENGINE === "real";
 let consoleErrors: string[] = [];
 
 test.beforeEach(async ({ page }) => {
   consoleErrors = [];
   page.on("pageerror", (e) => consoleErrors.push(e.message));
   page.on("console", (m) => {
-    if (m.type() === "error") consoleErrors.push(m.text());
+    // The browser logs these responses, but they are expected: a signed-out GET /api/engine/me answers 401
+    // by contract, and GET /api/engine/runs is still a proposal (404) on the real engine.
+    const url = m.location().url;
+    const expected =
+      (m.text().includes("status of 401") && url.endsWith("/api/engine/me")) ||
+      (REAL_ENGINE && m.text().includes("status of 404") && url.endsWith("/api/engine/runs"));
+    if (m.type() === "error" && !expected) consoleErrors.push(m.text());
   });
 });
 
@@ -80,10 +87,11 @@ test("AC-13.1 history lists the deposit with its balance", async ({ page }) => {
   await expect(page).toHaveURL("/history");
   const row = page.getByRole("row").filter({ hasText: "DEPOSIT" });
   await expect(row).toContainText("+100");
-  await expect(page.getByText("No finished runs yet.")).toBeVisible();
+  await expect(page.getByText(/No finished runs yet\.|Candle runs are not available yet\./)).toBeVisible();
 });
 
 test("AC-14.1 AC-14.2 a full round from the lobby: bet, play, settle, history", async ({ page }) => {
+  test.skip(REAL_ENGINE, "No playable table on the real engine until BlackjackTable lands (D-016)");
   await signIn(page);
   await deposit(page, "100");
   await expect(balance(page)).toHaveText("100");

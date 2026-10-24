@@ -12,7 +12,7 @@ export type FakeEngine = EngineClient & {
     roundId: string;
     handId: string;
     kind: "BET" | "DOUBLE" | "SPLIT";
-    amount: number;
+    amount?: number; // BET only
     idempotencyKey: string;
   }): Promise<Transaction>;
   settle(input: { roundId: string; handId: string; outcome: Outcome; idempotencyKey: string }): Promise<Transaction>;
@@ -65,8 +65,10 @@ export function createFakeEngineClient(store: () => KeyValueStore, now = () => n
   return {
     async signIn(username) {
       const s = load();
+      // Same rule as the engine: trimmed, non-empty, exact (case-sensitive) match.
       const name = username.trim();
-      const account = Object.values(s.accounts).find((a) => a.username.toLowerCase() === name.toLowerCase()) ?? {
+      if (!name) throw new EngineError("INVALID_USERNAME", "Write a name to sign the book");
+      const account = Object.values(s.accounts).find((a) => a.username === name) ?? {
         accountId: crypto.randomUUID(),
         username: name,
         balance: 0,
@@ -85,11 +87,9 @@ export function createFakeEngineClient(store: () => KeyValueStore, now = () => n
     async deposit(amount, idempotencyKey) {
       const s = load();
       const account = signedIn(s);
+      // A repeated key returns the original and changes nothing; the payload is not compared (engine contract).
       const prior = byKey(s, idempotencyKey);
-      if (prior) {
-        if (prior.amount !== amount) throw new EngineError("IDEMPOTENCY_CONFLICT", "Key reused with another amount");
-        return prior;
-      }
+      if (prior) return prior;
       if (!Number.isInteger(amount) || amount <= 0) {
         throw new EngineError("INVALID_AMOUNT", "Deposit must be a positive whole number");
       }
@@ -110,14 +110,15 @@ export function createFakeEngineClient(store: () => KeyValueStore, now = () => n
     },
 
     // Check and debit in one step: on any error nothing changes (AC-9.4, AC-10.7).
-    async debit({ roundId, handId, kind, amount, idempotencyKey }) {
+    // Like the engine, DOUBLE and SPLIT amounts come from the recorded stakes, never from the caller.
+    async debit({ roundId, handId, kind, amount: requested, idempotencyKey }) {
       const s = load();
       const account = signedIn(s);
       const prior = byKey(s, idempotencyKey);
-      if (prior) {
-        if (prior.amount !== amount) throw new EngineError("IDEMPOTENCY_CONFLICT", "Key reused with another amount");
-        return prior;
-      }
+      if (prior) return prior;
+      const stakeOf = (id: string) =>
+        s.transactions.filter((t) => t.handId === id && DEBITS.includes(t.kind)).reduce((sum, t) => sum + t.amount, 0);
+      const amount = kind === "DOUBLE" ? stakeOf(handId) : kind === "SPLIT" ? stakeOf(`${roundId}:0`) : (requested ?? 0);
       if (!Number.isInteger(amount) || amount <= 0) throw new EngineError("INVALID_AMOUNT", "Stake must be a positive whole number");
       if (account.balance < amount) throw new EngineError("INSUFFICIENT_FUNDS", "Not enough credits");
       account.balance -= amount;

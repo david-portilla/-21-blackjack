@@ -74,7 +74,8 @@ export default function HistoryPage() {
 
       <section>
         <h2 className="mb-4 font-display text-3xl">Candle runs</h2>
-        {errors.runs && <p className="text-sm text-bj-ember">{errors.runs}</p>}
+        {/* GET /api/engine/runs is still a proposal (R16); until it exists the section says so calmly. */}
+        {errors.runs && <p className="italic text-bj-muted">Candle runs are not available yet.</p>}
         {runs?.length === 0 && <p className="text-bj-muted">No finished runs yet.</p>}
         {best && (
           <p className="mb-3">

@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { createFakeEngineClient } from "./fake-engine-client";
-import type { EngineClient } from "./engine-client";
+import { createFakeEngineClient, type FakeEngine } from "./fake-engine-client";
 
 function memoryStore() {
   const data = new Map<string, string>();
@@ -8,7 +7,7 @@ function memoryStore() {
 }
 
 describe("fake engine client", () => {
-  let engine: EngineClient;
+  let engine: FakeEngine;
   beforeEach(() => {
     const store = memoryStore();
     engine = createFakeEngineClient(() => store);
@@ -20,10 +19,14 @@ describe("fake engine client", () => {
     expect(await engine.me()).toEqual(account);
   });
 
-  it("AC-1.2 an existing username signs into the same account, case-insensitive", async () => {
+  it("AC-1.2 an existing username signs into the same account (trimmed, case-sensitive like the engine)", async () => {
     const first = await engine.signIn("Leshy");
-    const again = await engine.signIn("leshy");
-    expect(again.accountId).toBe(first.accountId);
+    expect((await engine.signIn("  Leshy ")).accountId).toBe(first.accountId);
+    expect((await engine.signIn("leshy")).accountId).not.toBe(first.accountId);
+  });
+
+  it("an empty username is INVALID_USERNAME", async () => {
+    await expect(engine.signIn("   ")).rejects.toMatchObject({ code: "INVALID_USERNAME" });
   });
 
   it("AC-2.1 a deposit adds exactly its amount and records a DEPOSIT", async () => {
@@ -48,9 +51,20 @@ describe("fake engine client", () => {
     expect((await engine.me())?.balance).toBe(50);
   });
 
-  it("rejects a reused key with a different amount", async () => {
+  it("a reused key returns the original even with another amount (engine contract)", async () => {
     await engine.signIn("player");
-    await engine.deposit(50, "same");
-    await expect(engine.deposit(70, "same")).rejects.toMatchObject({ code: "IDEMPOTENCY_CONFLICT" });
+    const first = await engine.deposit(50, "same");
+    expect((await engine.deposit(70, "same")).transactionId).toBe(first.transactionId);
+    expect((await engine.me())?.balance).toBe(50);
+  });
+
+  it("DOUBLE and SPLIT amounts come from the recorded stakes, not the caller", async () => {
+    await engine.signIn("player");
+    await engine.deposit(100, "d");
+    await engine.debit({ roundId: "r", handId: "r:0", kind: "BET", amount: 10, idempotencyKey: "bet:r:0" });
+    const split = await engine.debit({ roundId: "r", handId: "r:1", kind: "SPLIT", amount: 999, idempotencyKey: "split:r:1" });
+    const double = await engine.debit({ roundId: "r", handId: "r:0", kind: "DOUBLE", idempotencyKey: "double:r:0" });
+    expect([split.amount, double.amount]).toEqual([10, 10]);
+    expect((await engine.me())?.balance).toBe(70);
   });
 });
