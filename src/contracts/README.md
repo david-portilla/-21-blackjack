@@ -80,6 +80,23 @@ type Transaction = {
 
 Rules the engine enforces: `BET` amount > 0; `DOUBLE` amount equals the hand's current stake; `SPLIT` amount equals hand 0's `BET`; same key + same payload returns the original transaction; same key + different payload is `IDEMPOTENCY_CONFLICT`; check-and-debit is one atomic DB operation.
 
+**Proposed for the twist (R16, pending Edgar and Heriberto):**
+
+```ts
+interface CasinoEngine {
+  // ...
+  closeRun(input: { accountId: string; runId: string; roundIds: string[]; roundsSurvived: number }): Promise<Run>
+}
+
+type Run = {
+  runId: string; accountId: string; roundsSurvived: number
+  net: number                 // computed by the engine from its transactions of roundIds
+  endedAt: string
+}
+```
+
+Idempotency: `closeRun` with the same `runId` returns the stored run.
+
 A `FakeEngine` (in-memory, same interface) lives next to the interface so the game can be built before the real engine exists.
 
 ## Engine: HTTP API for the website (Edgar)
@@ -90,6 +107,7 @@ A `FakeEngine` (in-memory, same interface) lives next to the interface so the ga
 | GET | `/api/engine/me` | | `{ accountId, username, balance }` |
 | POST | `/api/engine/deposits` | `{ amount, idempotencyKey }` | `Transaction` (R2) |
 | GET | `/api/engine/transactions` | | `Transaction[]`, newest first (R13) |
+| GET | `/api/engine/runs` | | `Run[]`, newest first (R16, proposed) |
 
 ## Game: HTTP API (Heriberto)
 
@@ -107,6 +125,7 @@ type RoundView = {
   dealer: { cards: CardView[]; total?: number }   // total only when settled
   hands: HandView[]
   activeHandId: string | null
+  run: { runId: string; candles: number; roundsSurvived: number; ended: boolean }   // R16, proposed
 }
 
 type HandView = {

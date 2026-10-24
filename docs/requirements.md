@@ -106,13 +106,25 @@ Format: Given / When / Then. "State unchanged" means: no card dealt, no hand cha
 - AC-15.3 No credentials in Git or in browser code.
 - AC-15.4 README lists known limitations.
 
-### R16 · Twist (all, TBD)
-- AC-16.1 To be defined Friday. It must touch the three parts and have one visible success criterion we can demo.
+### R16 · Twist: Candles (all)
+Inspired by Inscryption, which is also the visual reference for the game and the site (mood only: no copied assets or fonts).
+- AC-16.1 A run starts with 3 candles; each lost round snuffs one.
+- AC-16.2 At 0 candles the dealer claims the player: the run ends and is recorded.
+- AC-16.3 The player sees their candles at the table and their past runs (and best run) on the site.
+- AC-16.4 Visible success criterion for the demo: losing 3 rounds snuffs 3 candles and the run appears in the player's history.
+- AC-16.5 A run starts automatically with the first bet when the player has no open run, and stays open across visits until it ends.
+- AC-16.6 A round is lost when its net is negative: total returned minus every stake of the round (original, double, split). Push or net 0 (e.g. split with one win and one loss) snuffs nothing.
+- AC-16.7 Candles never relight. The run's score is rounds survived.
+- AC-16.8 Candles never change the balance.
+- AC-16.9 Ownership: the game keeps the live run (candles, rounds survived) and returns it in `RoundView`; when the run ends the game calls `engine.closeRun`, the engine computes the run's net from its transactions, stores it and serves it at `GET /api/engine/runs`; the site shows past runs and the best one.
 
-## Open questions (proposed default in brackets)
+## Open questions
 
-- Q1 If every player hand busts, does the dealer still draw? [Reveals the hidden card, does not draw.]
-- Q2 Username rules? [3 to 20 chars, letters, digits, `_`, case-insensitive unique.]
-- Q3 Minimum and maximum bet? [Min 1, max = balance.]
-- Q4 Hit on a split hand that reaches 21? [Finishes automatically, per AC-7.3.]
-- Q5 What is the twist? [Open.]
+Resolved:
+- Q1 If every player hand busts, the dealer still reveals and plays to 17 (literal brief, no special case). Proposed by David, pending Heriberto.
+- Q2 Username: 3 to 20 chars, letters, digits, `_`, case-insensitive unique; using an existing name signs into that account. Proposed by David, pending Edgar.
+- Q3 Bet: min 1, max = balance, no fixed cap. Proposed by David, pending Heriberto and Edgar.
+- Q4 A split hand reaching 21 finishes automatically: settled by the brief ("A hand reaching 21 finishes automatically"), AC-7.3.
+- Q5 Twist: Candles (R16), Inscryption-inspired. Agreed by David; team to confirm.
+- Q6 to Q9 Run start, lost round, no relight, no money effect: AC-16.5 to AC-16.8. Agreed by David; team to confirm.
+- Q10 Run ownership and contract additions: AC-16.9. Proposed by David, pending Edgar and Heriberto.
