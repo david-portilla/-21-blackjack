@@ -59,6 +59,11 @@ export interface CasinoEngine {
   settle(input: SettleInput): Promise<Transaction>;
   /** Records the ended run (AC-16.9). Same `runId` returns the stored run. Never moves money (AC-16.8). */
   closeRun(input: CloseRunInput): Promise<Run>;
+  /**
+   * Spends a spare candle on a new run if one is available (AC-18.5, AC-18.8): days with omen tier III
+   * minus candles already claimed, capped at 1. Same `runId` returns the first answer. Never moves money.
+   */
+  claimSpareCandle(input: { accountId: string; runId: string }): Promise<boolean>;
 }
 
 /** Error thrown by the engine; `code` maps 1:1 to ApiError codes. */

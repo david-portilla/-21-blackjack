@@ -28,5 +28,6 @@ export function getCasinoEngine(): CasinoEngine {
     debit: (input) => getEngine().debit(input),
     settle: (input) => getEngine().settle(input),
     closeRun: (input) => getRuns().closeRun(input),
+    claimSpareCandle: (input) => getEngine().claimSpareCandle(input),
   };
 }

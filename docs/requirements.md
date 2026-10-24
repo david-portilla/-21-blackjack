@@ -126,6 +126,18 @@ A daily challenge about how you play, never about how much. Reward is cosmetic. 
 - AC-17.4 The lobby shows today's omen, whether it is fulfilled and the streak; a fulfilled omen marks the player's name with ✶ for the day.
 - AC-17.5 Omens never move credits, never require a deposit and never depend on the amount bet.
 
+### R18 · Omens ladder and rewards (Edgar, Heriberto, David; in design)
+Harder omens and incentives without credits. Settled with `/grill-me` (Q11 to Q16).
+- AC-18.1 Each day's omen is a ladder of three tiers (I, II, III). Tier II is revealed once tier I is fulfilled, tier III once tier II is. Everything resets the next UTC day.
+- AC-18.2 The streak (AC-17.3) counts days with at least tier I fulfilled.
+- AC-18.3 Each fulfilled tier grants one sigil of that tier, at most once per tier per day. Sigils are derived from the ledger; nothing new is stored for them.
+- AC-18.4 Titles come from the total of tier III sigils: Marked (1), Seer (3), Prophet (7). Shown next to the player's name.
+- AC-18.5 Fulfilling tier III grants one spare candle for the player's next Candles run (4 candles instead of 3). At most one can be held; it is spent when that run starts. It never affects credits or the run in progress.
+- AC-18.6 Like R17: no credits as rewards, no deposit or bet-size conditions, no penalties for missing a day.
+- AC-18.7 Tier rules are the same every day: tier I is the day's omen; tier II is the day's omen plus any other of the four; tier III is all four omens (double-win, split, blackjack, push) on the same day.
+- AC-18.8 The engine owns the spare candle: `claimSpareCandle(accountId, runId)` returns true when one is available (days with tier III minus candles already claimed, capped at 1), idempotent by `runId`. The game calls it when it opens a new run and lights 4 candles when it is true.
+- AC-18.9 The lobby shows the current tier and its goal, the tiers fulfilled today, the player's sigils (I, II, III) and title; the header shows the title next to the name. No new page.
+
 ## Open questions
 
 Resolved:
@@ -136,3 +148,4 @@ Resolved:
 - Q5 Twist: Candles (R16), Inscryption-inspired. Agreed by David; team to confirm.
 - Q6 to Q9 Run start, lost round, no relight, no money effect: AC-16.5 to AC-16.8. Agreed by David; team to confirm.
 - Q10 Run ownership and contract additions: AC-16.9. Proposed by David, pending Edgar and Heriberto.
+- Q11 to Q16 Omens ladder, sigils, titles and spare candle: AC-18.1 to AC-18.9. Agreed by David; AC-18.4 pending Edgar, AC-18.5 and AC-18.8 pending Edgar and Heriberto.

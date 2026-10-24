@@ -124,7 +124,7 @@ export function BlackjackTable({ onMoneyChanged }: { onMoneyChanged: () => void 
             Rounds won this run: <span className="font-mono text-bj-text">{run?.roundsWon ?? 0}</span>
           </p>
         </div>
-        <Candles lit={candles} />
+        <Candles lit={candles} total={run?.startingCandles ?? STARTING_CANDLES} />
       </header>
 
       <Seat label="Dealer" total={round?.dealer.total}>

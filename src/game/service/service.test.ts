@@ -22,6 +22,7 @@ async function setup(balance: number) {
     debit: (i) => engine.debit(i),
     settle: (i) => engine.settle(i),
     closeRun: (i) => runs.closeRun(i),
+    claimSpareCandle: (i) => engine.claimSpareCandle(i),
   };
   decks = [];
   game = createGameService({ engine: casino, store: createGameStore(db), newDeck: () => decks.shift()!.cards });

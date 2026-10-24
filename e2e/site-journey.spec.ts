@@ -62,11 +62,15 @@ test("AC-1.1 a new account lands in the lobby with balance 0", async ({ page }) 
   await expect(balance(page)).toHaveText("0");
 });
 
-test("AC-17.4 the lobby shows today's omen and streak", async ({ page }) => {
+test("AC-17.4 AC-18.9 the lobby shows today's omen ladder, streak and sigils", async ({ page }) => {
   await signIn(page);
   await expect(page.getByRole("region", { name: "Today's omen" })).toBeVisible();
   await expect(page.getByTestId("omen-state")).toHaveText("Not yet fulfilled");
   await expect(page.getByText(/Streak: 0 days/)).toBeVisible();
+  // AC-18.9: the ladder starts at tier I with no signs, sigils or title.
+  await expect(page.getByRole("heading", { name: /Today.s omen · tier I$/ })).toBeVisible();
+  await expect(page.getByTestId("sigils")).toHaveText("I×0 II×0 III×0");
+  await expect(page.getByRole("list", { name: "Signs today" }).getByRole("listitem")).toHaveCount(4);
 });
 
 test("AC-2.1 AC-14.2 a deposit updates the visible balance", async ({ page }) => {

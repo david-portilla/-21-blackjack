@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Transaction } from "./engine";
-import { OMENS, isFulfilled, omenFor, omenStatus, type OmenId } from "./omens";
+import { OMENS, isFulfilled, omenFor, omenStatus, tier3Days, type OmenId } from "./omens";
 
 let seq = 0;
 const tx = (day: string, fields: Partial<Transaction>): Transaction => ({
@@ -69,5 +69,39 @@ describe("omens", () => {
   it("AC-17.2 fulfilling another day's omen does not count today", () => {
     const wrong = OMENS.find((o) => o.id !== omenFor("2026-10-24").id)!;
     expect(omenStatus(fulfil(wrong.id, "2026-10-24"), at("2026-10-24"))).toMatchObject({ fulfilled: false, streak: 0 });
+  });
+});
+
+describe("omens ladder (R18)", () => {
+  const day = "2026-10-24"; // the day's omen is blackjack
+  const others = OMENS.map((o) => o.id).filter((id) => id !== omenFor(day).id);
+
+  it("AC-18.1 AC-18.7 tier I is the day's omen, II adds any other, III is all four", () => {
+    expect(omenStatus(fulfil(omenFor(day).id, day), at(day)).ladder).toMatchObject({ tier: 1, next: 2 });
+    const two = [...fulfil(omenFor(day).id, day), ...fulfil(others[0], day)];
+    expect(omenStatus(two, at(day)).ladder).toMatchObject({ tier: 2, next: 3 });
+    const all = OMENS.flatMap((o) => fulfil(o.id, day));
+    expect(omenStatus(all, at(day)).ladder).toMatchObject({ tier: 3, next: null });
+    expect(omenStatus(all, at(day)).ladder.signs).toHaveLength(4);
+  });
+
+  it("AC-18.1 tiers come in order: other omens without the day's one reach no tier", () => {
+    const withoutToday = others.flatMap((id) => fulfil(id, day));
+    expect(omenStatus(withoutToday, at(day))).toMatchObject({ fulfilled: false, ladder: { tier: 0, next: 1 } });
+  });
+
+  it("AC-18.3 AC-18.4 one sigil per tier per day; titles from tier III sigils", () => {
+    const allOn = (d: string) => OMENS.flatMap((o) => fulfil(o.id, d));
+    const three = ["2026-10-20", "2026-10-21", "2026-10-22"].flatMap(allOn);
+    const status = omenStatus([...three, ...fulfil(omenFor(day).id, day)], at(day));
+    expect(status.sigils).toEqual({ 1: 4, 2: 3, 3: 3 });
+    expect(status.title).toBe("Seer");
+    expect(omenStatus(allOn(day), at(day)).title).toBe("Marked");
+    expect(omenStatus([], at(day)).title).toBeNull();
+  });
+
+  it("AC-18.5 tier3Days counts the days with all four omens", () => {
+    const ledger = [...OMENS.flatMap((o) => fulfil(o.id, "2026-10-22")), ...fulfil(omenFor(day).id, day)];
+    expect(tier3Days(ledger)).toBe(1);
   });
 });

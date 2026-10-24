@@ -31,6 +31,13 @@ Bring players back for **how they play, not how much they bet**. One daily chall
 | `GET /api/engine/omens` | Edgar (written by David) | done: `issues/01-engine-route.md` |
 | Lobby panel, header mark | David | done |
 | Table hint when an omen is fulfilled | Heriberto | optional: `issues/02-table-hint.md` |
+| Ladder, sigils, titles (R18) in `omens.ts` + lobby panel and header title | David | done |
+| `claimSpareCandle` + table (R18) | Edgar (written by David) | done: `issues/03-engine-spare-candle.md` |
+| 4 candles on a new run after tier III (R18) | Heriberto (written by David) | done: `issues/04-game-spare-candle.md` |
+
+## Ladder and rewards (R18, D-023)
+
+Same-day ladder: tier I is the day's omen, II adds any other omen, III is all four. One sigil per tier per day; titles from tier III sigils (Marked 1, Seer 3, Prophet 7); tier III earns one spare candle (4 candles on the next run, at most one held). Still no credits.
 
 ## Out of scope
 

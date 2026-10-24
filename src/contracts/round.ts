@@ -28,6 +28,8 @@ export type HandView = {
 export type RunView = {
   runId: string;
   candles: number;
+  /** Candles the run started with: 3, or 4 with a spare candle (AC-18.5). */
+  startingCandles: number;
   /** Rounds with a positive net in this run (proposed rename of `roundsSurvived`, pending approval). */
   roundsWon: number;
   ended: boolean;

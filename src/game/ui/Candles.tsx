@@ -1,10 +1,10 @@
 import { STARTING_CANDLES } from "../rules/run";
 
-/** The player's candles (AC-16.3). Snuffed candles stay on the table, unlit. */
-export function Candles({ lit }: { lit: number }) {
+/** The player's candles (AC-16.3); `total` is 4 with a spare candle (AC-18.5). Snuffed candles stay, unlit. */
+export function Candles({ lit, total = STARTING_CANDLES }: { lit: number; total?: number }) {
   return (
-    <div role="img" aria-label={`${lit} of ${STARTING_CANDLES} candles lit`} className="flex items-end gap-3">
-      {Array.from({ length: STARTING_CANDLES }, (_, i) => (
+    <div role="img" aria-label={`${lit} of ${total} candles lit`} className="flex items-end gap-3">
+      {Array.from({ length: total }, (_, i) => (
         <Candle key={i} lit={i < lit} />
       ))}
     </div>

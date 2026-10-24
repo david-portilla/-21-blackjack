@@ -23,6 +23,7 @@ beforeEach(async () => {
     debit: (i) => engine.debit(i),
     settle: (i) => engine.settle(i),
     closeRun: (i) => runs.closeRun(i),
+    claimSpareCandle: (i) => engine.claimSpareCandle(i),
   };
   decks = [];
   game = createGameService({ engine: casino, store: createGameStore(db), newDeck: () => decks.shift()!.cards });
@@ -64,5 +65,42 @@ describe("omens on the real ledger", () => {
     const deck = { blackjack: fixtures.playerNatural, push: fixtures.bothNatural, "double-win": fixtures.double56, split: fixtures.split88 }[today];
     await play(deck, today === "double-win" ? "double" : today === "split" ? "split" : undefined);
     expect(omenStatus(await ledger(), new Date())).toMatchObject({ fulfilled: true, streak: 1 });
+  });
+});
+
+describe("omens ladder and spare candle on the real engine and game (R18)", () => {
+  const fourSigns = async () => {
+    await play(fixtures.playerNatural);
+    await play(fixtures.bothNatural);
+    await play(fixtures.double56, "double");
+    await play(fixtures.split88, "split");
+  };
+
+  it("AC-18.3 AC-18.4 all four signs in one day reach tier III, with its sigils and the Marked title", async () => {
+    await fourSigns();
+    expect(omenStatus(await ledger(), new Date())).toMatchObject({
+      ladder: { tier: 3, next: null },
+      sigils: { 1: 1, 2: 1, 3: 1 },
+      title: "Marked",
+    });
+  });
+
+  it("AC-18.5 AC-18.8 no spare candle without tier III; claims are idempotent by run", async () => {
+    expect(await engine.claimSpareCandle({ accountId, runId: "r1" })).toBe(false);
+    await fourSigns();
+    expect(await engine.claimSpareCandle({ accountId, runId: "r1" })).toBe(false); // first answer stands
+    expect(await engine.claimSpareCandle({ accountId, runId: "r2" })).toBe(true);
+    expect(await engine.claimSpareCandle({ accountId, runId: "r2" })).toBe(true);
+    expect(await engine.claimSpareCandle({ accountId, runId: "r3" })).toBe(false); // spent, capped at 1
+  });
+
+  it("AC-18.5 tier III lights a fourth candle on the next run, once, and never moves credits", async () => {
+    await fourSigns();
+    // Finish the open run: three lost rounds snuff its three candles.
+    for (let i = 0; i < 3; i++) await play({ ...fixtures.dealerNatural, name: `loss-${i}` });
+    const before = (await engine.getAccount(accountId)).balance;
+    const next = await play({ ...fixtures.dealerDraws, name: "next-run" });
+    expect(next.run).toMatchObject({ startingCandles: 4, candles: 4 });
+    expect((await engine.getAccount(accountId)).balance - before).toBe(10); // just the round's own win
   });
 });

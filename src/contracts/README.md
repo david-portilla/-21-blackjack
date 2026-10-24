@@ -100,7 +100,9 @@ type Run = {
 }
 ```
 
-Idempotency: `closeRun` with the same `runId` returns the stored run. `net` = PAYOUT minus BET, DOUBLE and SPLIT over the account's transactions of `roundIds`; it never changes the balance (AC-16.8).
+Idempotency: `closeRun` with the same `runId` returns the stored run.
+
+`claimSpareCandle({ accountId, runId })` (R18, AC-18.8): true when a spare candle is available (days with omen tier III minus candles granted, capped at 1); idempotent by `runId`; never moves money. The game calls it when it opens a new run and starts with 4 candles if true; `RunView.startingCandles` carries it to the table. `net` = PAYOUT minus BET, DOUBLE and SPLIT over the account's transactions of `roundIds`; it never changes the balance (AC-16.8).
 
 ## Engine: HTTP API for the website (Edgar)
 
@@ -112,7 +114,7 @@ Idempotency: `closeRun` with the same `runId` returns the stored run. `net` = PA
 | POST | `/api/engine/deposits` | `{ amount, idempotencyKey }` | `Transaction` (R2) |
 | GET | `/api/engine/transactions` | | `Transaction[]`, newest first (R13) |
 | GET | `/api/engine/runs` | | `Run[]`, newest first (R16) |
-| GET | `/api/engine/omens` | | `OmenStatus` (R17, proposed by David, pending Edgar) |
+| GET | `/api/engine/omens` | | `OmenStatus`: today's omen, ladder (tier, next, signs), streak, sigils and title (R17, R18; proposed by David, pending Edgar) |
 
 `OmenStatus` and the rules live in `src/contracts/omens.ts`: the route is `Response.json(omenStatus(transactionsOfTheSessionAccount, new Date()))`, read-only, no new tables.
 

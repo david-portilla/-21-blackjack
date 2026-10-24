@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS game_runs (
   id TEXT PRIMARY KEY,
   account_id TEXT NOT NULL,
   candles INTEGER NOT NULL,
+  starting_candles INTEGER NOT NULL DEFAULT 3,
   rounds_won INTEGER NOT NULL,
   round_ids TEXT NOT NULL,
   closed INTEGER NOT NULL DEFAULT 0,
@@ -56,6 +57,8 @@ export type RunRow = {
   runId: string;
   accountId: string;
   candles: number;
+  /** 3, or 4 with a spare candle (AC-18.5). */
+  startingCandles: number;
   roundsWon: number;
   roundIds: string[];
   closed: boolean;
@@ -81,6 +84,7 @@ function toRun(r: Record<string, unknown>): RunRow {
     runId: r.id as string,
     accountId: r.account_id as string,
     candles: Number(r.candles),
+    startingCandles: Number(r.starting_candles ?? 3),
     roundsWon: Number(r.rounds_won),
     roundIds: JSON.parse(r.round_ids as string),
     closed: Number(r.closed) === 1,
@@ -92,6 +96,11 @@ const dataOf = (r: RoundRow): string =>
 
 export function createGameStore(db: DatabaseSync) {
   db.exec(SCHEMA);
+  // Databases created before AC-18.5 lack the column; CREATE TABLE IF NOT EXISTS does not add it.
+  const columns = db.prepare("PRAGMA table_info(game_runs)").all().map((c) => c.name);
+  if (!columns.includes("starting_candles")) {
+    db.exec("ALTER TABLE game_runs ADD COLUMN starting_candles INTEGER NOT NULL DEFAULT 3");
+  }
 
   return {
     roundByKey(accountId: string, idempotencyKey: string): RoundRow | null {
@@ -146,8 +155,8 @@ export function createGameStore(db: DatabaseSync) {
 
     insertRun(run: RunRow): void {
       db.prepare(
-        "INSERT INTO game_runs (id, account_id, candles, rounds_won, round_ids, closed, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      ).run(run.runId, run.accountId, run.candles, run.roundsWon, JSON.stringify(run.roundIds), run.closed ? 1 : 0, new Date().toISOString());
+        "INSERT INTO game_runs (id, account_id, candles, starting_candles, rounds_won, round_ids, closed, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      ).run(run.runId, run.accountId, run.candles, run.startingCandles, run.roundsWon, JSON.stringify(run.roundIds), run.closed ? 1 : 0, new Date().toISOString());
     },
 
     saveRun(run: RunRow): void {

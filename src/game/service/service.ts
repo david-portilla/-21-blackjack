@@ -34,7 +34,13 @@ export function createGameService({ engine, store, newDeck = () => shuffledDeck(
   }
 
   function runView(run: RunRow): RunView {
-    return { runId: run.runId, candles: run.candles, roundsWon: run.roundsWon, ended: run.candles === 0 };
+    return {
+      runId: run.runId,
+      candles: run.candles,
+      startingCandles: run.startingCandles,
+      roundsWon: run.roundsWon,
+      ended: run.candles === 0,
+    };
   }
 
   function view(row: RoundRow): RoundView {
@@ -145,7 +151,10 @@ export function createGameService({ engine, store, newDeck = () => shuffledDeck(
       // AC-16.5: the first bet without an open run lights a new one.
       let run = await openRun(accountId);
       if (!run) {
-        run = { runId: randomUUID(), accountId, candles: STARTING_CANDLES, roundsWon: 0, roundIds: [], closed: false };
+        // AC-18.5: a spare candle earned with omen tier III lights a fourth candle on the new run.
+        const runId = randomUUID();
+        const candles = STARTING_CANDLES + ((await engine.claimSpareCandle({ accountId, runId })) ? 1 : 0);
+        run = { runId, accountId, candles, startingCandles: candles, roundsWon: 0, roundIds: [], closed: false };
         store.insertRun(run);
       }
 

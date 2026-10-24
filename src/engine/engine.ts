@@ -6,6 +6,7 @@ import {
   type SettleInput,
   type Transaction,
 } from "@/contracts/engine";
+import { tier3Days } from "@/contracts/omens";
 import type { Outcome, TxKind } from "@/contracts/types";
 import type { DatabaseSync } from "./db";
 
@@ -64,6 +65,13 @@ function toTransaction(row: TxRow): Transaction {
  * reading and writing), so check-and-write is atomic inside one Node process.
  */
 export function createEngine(db: DatabaseSync) {
+  function listTx(accountId: string): Transaction[] {
+    const rows = db
+      .prepare("SELECT * FROM transactions WHERE account_id = ? ORDER BY created_at DESC, rowid DESC")
+      .all(accountId) as TxRow[];
+    return rows.map(toTransaction);
+  }
+
   function findAccount(accountId: string): AccountRow | undefined {
     return db.prepare("SELECT id, username, balance FROM accounts WHERE id = ?").get(accountId) as
       | AccountRow
@@ -220,10 +228,26 @@ export function createEngine(db: DatabaseSync) {
 
     /** All transactions of the account, newest first. */
     async listTransactions(accountId: string): Promise<Transaction[]> {
-      const rows = db
-        .prepare("SELECT * FROM transactions WHERE account_id = ? ORDER BY created_at DESC, rowid DESC")
-        .all(accountId) as TxRow[];
-      return rows.map(toTransaction);
+      return listTx(accountId);
+    },
+
+    /** Spare candle for a new run (AC-18.5, AC-18.8). Same runId returns the first answer; never moves money. */
+    async claimSpareCandle({ accountId, runId }: { accountId: string; runId: string }): Promise<boolean> {
+      const prior = db.prepare("SELECT granted FROM spare_candle_claims WHERE run_id = ?").get(runId) as
+        | { granted: number }
+        | undefined;
+      if (prior) return prior.granted === 1;
+      const spent = db
+        .prepare("SELECT COUNT(*) AS n FROM spare_candle_claims WHERE account_id = ? AND granted = 1")
+        .get(accountId) as { n: number };
+      const granted = Math.min(1, tier3Days(listTx(accountId)) - spent.n) > 0;
+      db.prepare("INSERT INTO spare_candle_claims (run_id, account_id, granted, claimed_at) VALUES (?, ?, ?, ?)").run(
+        runId,
+        accountId,
+        granted ? 1 : 0,
+        new Date().toISOString(),
+      );
+      return granted;
     },
   };
 }

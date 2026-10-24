@@ -39,6 +39,12 @@ CREATE TABLE IF NOT EXISTS transactions (
   created_at TEXT,
   UNIQUE (account_id, idempotency_key)
 );
+CREATE TABLE IF NOT EXISTS spare_candle_claims (
+  run_id TEXT PRIMARY KEY,
+  account_id TEXT NOT NULL,
+  granted INTEGER NOT NULL,
+  claimed_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS runs (
   id TEXT PRIMARY KEY,
   account_id TEXT NOT NULL,

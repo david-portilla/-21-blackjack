@@ -19,7 +19,7 @@ const R = "r1";
 const H0 = "r1:0";
 const H1 = "r1:1";
 const cards = (codes: string): Card[] => codes.split(" ").map(card);
-const run = { runId: "run1", candles: 3, roundsWon: 0, ended: false };
+const run = { runId: "run1", candles: 3, startingCandles: 3, roundsWon: 0, ended: false };
 
 function play(f: DeckFixture, stake: number, actions: [string, "hit" | "stand" | "double" | "split"][]): RoundState {
   const draw = drawFrom(f);

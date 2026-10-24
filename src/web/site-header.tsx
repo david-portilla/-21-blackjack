@@ -33,10 +33,16 @@ export function SiteHeader() {
           <Link href="/play" className="hover:text-bj-text">Play</Link>
           <Link href="/history" className="hover:text-bj-text">History</Link>
           <span className="text-bj-text">
-            {omen?.fulfilled && (
-              <span className="bj-candle-glow" title="Marked by today's omen" aria-label="Marked by today's omen">
-                ✶{" "}
+            {omen?.title ? (
+              <span className="bj-candle-glow font-display" data-testid="omen-title">
+                ✶ {omen.title}{" "}
               </span>
+            ) : (
+              omen?.fulfilled && (
+                <span className="bj-candle-glow" title="Marked by today's omen" aria-label="Marked by today's omen">
+                  ✶{" "}
+                </span>
+              )
             )}
             {account.username} ·{" "}
             <strong data-testid="balance" className="bj-candle-glow font-mono">
