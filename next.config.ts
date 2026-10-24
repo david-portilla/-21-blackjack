@@ -10,6 +10,8 @@ const lanAddresses = Object.values(networkInterfaces())
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: lanAddresses,
+  // The floating dev tools badge covers controls on phones during the demo; errors still show.
+  devIndicators: false,
   turbopack: {
     rules: {
       "*.css": {

@@ -127,6 +127,12 @@ body::after {
   70% { opacity: 0.88; }
 }
 
+/* Slide entrance in /presentation; used through motion-safe:, so reduced motion skips it. */
+@keyframes bj-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bj-candle-glow {
     animation: none;

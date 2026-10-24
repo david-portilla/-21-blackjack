@@ -154,3 +154,22 @@ test("AC-1.3 reloading a private page keeps the player on it", async ({ page }) 
     await expect(page).toHaveURL(path);
   }
 });
+
+test("presentation: five slides, keyboard and buttons", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "View the presentation" }).click();
+  await expect(page).toHaveURL("/presentation");
+  const counter = page.getByTestId("slide-counter");
+  await expect(counter).toHaveText("1 / 5");
+  for (const n of [2, 3]) {
+    await page.keyboard.press("ArrowRight");
+    await expect(counter).toHaveText(`${n} / 5`);
+  }
+  for (const n of [4, 5]) {
+    await page.getByRole("button", { name: "Next", exact: true }).click();
+    await expect(counter).toHaveText(`${n} / 5`);
+  }
+  await expect(page.getByRole("button", { name: "Next", exact: true })).toBeDisabled();
+  await page.keyboard.press("ArrowLeft");
+  await expect(counter).toHaveText("4 / 5");
+});

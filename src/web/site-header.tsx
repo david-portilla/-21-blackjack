@@ -32,6 +32,7 @@ export function SiteHeader() {
           <Link href="/lobby" className="hover:text-bj-text">Lobby</Link>
           <Link href="/play" className="hover:text-bj-text">Play</Link>
           <Link href="/history" className="hover:text-bj-text">History</Link>
+          <Link href="/presentation" className="hover:text-bj-text">Presentation</Link>
           <span className="text-bj-text">
             {omen?.title ? (
               <span className="bj-candle-glow font-display" data-testid="omen-title">

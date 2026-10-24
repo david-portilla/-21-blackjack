@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { useAccount } from "@/web/account-context";
@@ -58,6 +59,9 @@ export default function SignInPage() {
         </button>
         {error && <p className="text-sm text-bj-blood">{error}</p>}
       </form>
+      <Link href="/presentation" className="text-center text-sm italic text-bj-muted hover:text-bj-text">
+        View the presentation
+      </Link>
     </main>
   );
 }
