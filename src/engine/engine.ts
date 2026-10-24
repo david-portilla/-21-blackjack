@@ -152,10 +152,14 @@ export function createEngine(db: DatabaseSync) {
   }
 
   return {
-    /** Signs in by username (trimmed, case-sensitive), creating the account with balance 0 if new. */
+    /**
+     * Signs in by username, creating the account with balance 0 if new. The username is stored and
+     * matched exactly as sent (no trim, case-sensitive); validation lives in the site. Only a
+     * non-string is rejected, since it cannot be stored.
+     */
     async signIn(username: string): Promise<Account> {
-      const name = typeof username === "string" ? username.trim() : "";
-      if (!name) throw new EngineError("INVALID_USERNAME");
+      if (typeof username !== "string") throw new EngineError("INVALID_USERNAME");
+      const name = username;
       const existing = db
         .prepare("SELECT id, username, balance FROM accounts WHERE username = ?")
         .get(name) as AccountRow | undefined;

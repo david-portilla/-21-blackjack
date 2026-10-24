@@ -13,10 +13,28 @@ const STATUS: Partial<Record<ErrorCode, number>> = {
   INSUFFICIENT_FUNDS: 409,
 };
 
-/** Maps an EngineError to its ApiError response. Anything else is a 500 with a generic message. */
+/** Player-facing sentence per code; the site shows `ApiError.message` as is. */
+const MESSAGE: Record<ErrorCode, string> = {
+  INVALID_AMOUNT: "Enter a whole number of credits greater than 0.",
+  INVALID_USERNAME: "Enter a username.",
+  INSUFFICIENT_FUNDS: "Not enough credits.",
+  ACCOUNT_NOT_FOUND: "Account not found.",
+  UNAUTHENTICATED: "Please sign in.",
+  ROUND_NOT_FOUND: "Round not found.",
+  ROUND_IN_PROGRESS: "Finish the current round first.",
+  INVALID_ACTION: "That move is not allowed right now.",
+  STALE_VERSION: "The table changed. Please try again.",
+  IDEMPOTENCY_CONFLICT: "This request was already used for something else.",
+};
+
+/**
+ * Maps an EngineError to its ApiError response, with a readable message unless the error carries a
+ * custom one. Anything else is a 500 with a generic message.
+ */
 export function errorResponse(err: unknown): Response {
   if (err instanceof EngineError) {
-    const body: ApiError = { error: { code: err.code, message: err.message } };
+    const message = err.message === err.code ? MESSAGE[err.code] : err.message;
+    const body: ApiError = { error: { code: err.code, message } };
     return Response.json(body, { status: STATUS[err.code] ?? 400 });
   }
   console.error(err);

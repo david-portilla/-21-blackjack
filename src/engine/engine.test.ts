@@ -46,14 +46,24 @@ describe("accounts (02)", () => {
 
   it("AC-1.2 same username returns the same account", async () => {
     await fund(30);
-    expect(await engine.signIn("  alice ")).toEqual({ accountId, username: "alice", balance: 30 });
-    expect((await engine.signIn("Alice")).accountId).not.toBe(accountId);
+    expect(await engine.signIn("alice")).toEqual({ accountId, username: "alice", balance: 30 });
   });
 
-  it("empty username rejected with INVALID_USERNAME", async () => {
-    await expectCode(engine.signIn(""), "INVALID_USERNAME");
-    await expectCode(engine.signIn("   "), "INVALID_USERNAME");
+  it("AC-1.2 username match is exact and case-sensitive", async () => {
+    expect((await engine.signIn("Alice")).accountId).not.toBe(accountId);
+    expect((await engine.signIn(" alice ")).accountId).not.toBe(accountId);
+  });
+
+  it("AC-1.1 username is stored exactly as sent", async () => {
+    const account = await engine.signIn("  Bob ");
+    expect(account.username).toBe("  Bob ");
+    expect((await engine.signIn("  Bob ")).accountId).toBe(account.accountId);
+    expect((await engine.signIn("")).username).toBe("");
+  });
+
+  it("non-string username rejected with INVALID_USERNAME", async () => {
     await expectCode(engine.signIn(42 as unknown as string), "INVALID_USERNAME");
+    await expectCode(engine.signIn(undefined as unknown as string), "INVALID_USERNAME");
   });
 
   it("getAccount on unknown id throws ACCOUNT_NOT_FOUND", async () => {

@@ -15,3 +15,10 @@ export async function POST(req: Request) {
     return errorResponse(err);
   }
 }
+
+/** Signs out (AC-1.3): clears the session cookie. 204 whether or not there was a session. */
+export async function DELETE() {
+  const res = new NextResponse(null, { status: 204 });
+  res.cookies.delete({ name: SESSION_COOKIE, ...sessionCookieOptions });
+  return res;
+}

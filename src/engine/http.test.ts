@@ -1,23 +1,41 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EngineError } from "@/contracts/engine";
-import type { ErrorCode } from "@/contracts/types";
+import type { ApiError, ErrorCode } from "@/contracts/types";
 import { errorResponse, readJson, requireAccountId } from "./http";
 import { SESSION_COOKIE, signSession } from "./session";
 
 describe("errorResponse", () => {
-  const cases: [ErrorCode, number][] = [
-    ["INVALID_AMOUNT", 400],
-    ["INVALID_USERNAME", 400],
-    ["UNAUTHENTICATED", 401],
-    ["ACCOUNT_NOT_FOUND", 404],
-    ["ROUND_NOT_FOUND", 404],
-    ["INSUFFICIENT_FUNDS", 409],
+  const cases: [ErrorCode, number, string][] = [
+    ["INVALID_AMOUNT", 400, "Enter a whole number of credits greater than 0."],
+    ["INVALID_USERNAME", 400, "Enter a username."],
+    ["UNAUTHENTICATED", 401, "Please sign in."],
+    ["ACCOUNT_NOT_FOUND", 404, "Account not found."],
+    ["ROUND_NOT_FOUND", 404, "Round not found."],
+    ["INSUFFICIENT_FUNDS", 409, "Not enough credits."],
   ];
 
-  it.each(cases)("maps %s to %i as ApiError", async (code, status) => {
-    const res = errorResponse(new EngineError(code, "msg"));
+  it.each(cases)("maps %s to %i with a readable message", async (code, status, message) => {
+    const res = errorResponse(new EngineError(code));
     expect(res.status).toBe(status);
-    await expect(res.json()).resolves.toEqual({ error: { code, message: "msg" } });
+    await expect(res.json()).resolves.toEqual({ error: { code, message } });
+  });
+
+  it("every code has a readable message, not the bare code", async () => {
+    const codes: ErrorCode[] = ["ROUND_IN_PROGRESS", "INVALID_ACTION", "STALE_VERSION", "IDEMPOTENCY_CONFLICT"];
+    for (const code of codes) {
+      const { error } = (await errorResponse(new EngineError(code)).json()) as ApiError;
+      expect(error.code).toBe(code);
+      expect(error.message).not.toBe(code);
+      expect(error.message.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps a custom message", async () => {
+    const res = errorResponse(new EngineError("INVALID_AMOUNT", "idempotencyKey is required"));
+    expect(res.status).toBe(400);
+    await expect(res.json()).resolves.toEqual({
+      error: { code: "INVALID_AMOUNT", message: "idempotencyKey is required" },
+    });
   });
 
   it("unknown error is a 500 without internal details", async () => {
