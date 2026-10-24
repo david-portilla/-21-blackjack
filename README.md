@@ -8,7 +8,7 @@ Requirements: Node 22+, pnpm 10.
 
 ```bash
 pnpm install
-cp .env.example .env   # fill DATABASE_URL (Edgar shares it)
+cp .env.example .env   # set SESSION_SECRET; data lives in data/casino.db (SQLite, D-017)
 pnpm dev               # http://localhost:3000
 ```
 

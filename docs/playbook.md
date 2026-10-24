@@ -53,7 +53,7 @@ This lets any agent, with any model, answer "what is left?" by grepping, without
 **Friday (tonight)**
 1. Review and approve `requirements.md` v1 and `contracts` v1. Answer the open questions. Choose the twist (R16).
 2. David pushes the skeleton: Next.js app, folders, `pnpm check`, CI, `.env.example`.
-3. Edgar chooses the DB access library and sets up Neon (D-011). Each owner gets a Postgres schema: `engine` (Edgar), `game` (Heriberto).
+3. Edgar chooses the DB access library and sets up storage (D-011). Done: SQLite via `node:sqlite` in `data/casino.db`, the game adds its own tables on the same connection (D-017).
 4. Each person configures their agent with `AGENTS.md`, starts it and confirms the app runs locally with their `.env`.
 5. Edgar: `CasinoEngine` types + `FakeEngine`. Heriberto: `RoundView` types + fixtures.
 
