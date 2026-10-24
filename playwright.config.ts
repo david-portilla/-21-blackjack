@@ -2,7 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 // Browser journey checks (`pnpm e2e`). Local only: CI runs `pnpm check`.
 // E2E_ENGINE=real runs the same journey against the real /api/engine/* routes instead of the fake.
-const PORT = 3123;
+// Next allows one `next dev` per project, so an already running `pnpm dev` on :3000 is reused as is.
+const PORT = 3000;
 
 export default defineConfig({
   testDir: "e2e",

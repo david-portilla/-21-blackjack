@@ -87,6 +87,8 @@ test("AC-14.1 the table is reachable from the lobby", async ({ page }) => {
   await signIn(page);
   await page.getByRole("link", { name: "Take a seat at the table" }).click();
   await expect(page).toHaveURL("/play");
+  await expect(page.getByText("Preview of the table")).toBeVisible();
+  await expect(page.getByRole("img", { name: "Hidden card" })).toBeVisible();
 });
 
 test("the session and balance survive a reload", async ({ page }) => {

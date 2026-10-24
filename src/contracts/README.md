@@ -195,6 +195,8 @@ Defined in `src/app/globals.css`. Use the tokens so the table and the site look 
 
 Inscryption is a mood reference only: draw or generate your own art, never copy its assets.
 
+Visual pieces you can import (no logic, take them or leave them): `PlayingCard` (`@/web/ui/playing-card`, renders a `CardView`, hidden card included), `Candles` (`@/web/ui/candles`, `lit` of 3), and `TableView` (`@/web/ui/table-view`, renders a whole `RoundView` with action buttons). `/play` shows `TablePreview`, a static `RoundView` sample, until `BlackjackTable` lands.
+
 ## Fixtures
 
 `fixtures/` holds named fixed decks (e.g. `double-5-6`, `split-8-8`, `split-aces`, `both-natural`, `dealer-soft-17`). Every owner's tests use the same ones, so agents and models agree on what "correct" looks like.
