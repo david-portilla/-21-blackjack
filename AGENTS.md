@@ -4,6 +4,7 @@ Canonical instructions for every AI agent in this repo, whatever the tool or mod
 
 ## Read first, in this order
 
+0. `docs/brief/`: the original challenge brief (PDF). Source of `docs/requirements.md`; requirements win if they differ.
 1. `docs/requirements.md`: what we build. Requirement and AC IDs (`R9`, `AC-9.3`).
 2. `src/contracts/README.md`: how the parts talk. IDs, payloads, errors.
 3. `docs/decisions.md`: why things are the way they are.
@@ -41,10 +42,22 @@ Ask your human which owner they are if it is not obvious.
 ## Conventions
 
 - Language in code, comments, commits and docs: English.
-- TypeScript strict. Next.js App Router.
+- Stack: Next.js 16 App Router, TypeScript strict, Tailwind 4, Vitest, pnpm. Tests sit next to the code as `*.test.ts(x)`.
+- `pnpm dev` runs the app; `pnpm check` runs typecheck, lint and tests.
+- Shared types: import from `@/contracts/types`.
 - Commits: `<area>: <what>` where area is `engine`, `game`, `web`, `contracts`, `docs` or `repo`.
 - Small PRs to `main`. `main` must always start.
 
 ## Shared skills
 
 Shared skills live in `skills/<name>/SKILL.md` (Agent Skills format). Link them into your tool's skills folder if it supports skills. Personal skills stay in your own environment and are not committed.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
