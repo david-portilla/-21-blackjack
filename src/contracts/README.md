@@ -10,6 +10,7 @@ This folder is the only place where the three parts meet. Types live here as Typ
 | `CasinoEngine` interface + engine HTTP API | Edgar |
 | Round API + `RoundView` | Heriberto |
 | Test fixtures (fixed decks) | Heriberto |
+| Website integration + shared theme | David |
 
 ## IDs
 
@@ -152,6 +153,47 @@ type HandView = {
    - `double` / `split`: call `engine.debit` first. On `INSUFFICIENT_FUNDS` return the error and change nothing.
 4. When all hands finish: dealer plays (R8), then `engine.settle` once per hand with `payout:{handId}`.
 5. Website: refetch `/api/engine/me` and `/api/engine/transactions` after each response that changed money (R14).
+
+## Website integration (David)
+
+How the site consumes your parts. The site already runs against an in-browser fake engine (`src/web/fake-engine-client.ts`); when your routes exist, set `NEXT_PUBLIC_ENGINE_FAKE=0` in `.env` and the same screens call the real thing.
+
+### What the site expects from `/api/engine/*` (Edgar)
+
+- JSON in and out. Success: the body in the table above, status 2xx. Failure: status 4xx/5xx with `ApiError` (`{ error: { code, message } }`); the site shows `message` and branches on `code`.
+- Session: `POST /api/engine/session` sets an HTTP-only, same-origin cookie. The site never sends an `accountId`; every other call relies on the cookie.
+- `GET /api/engine/me` without a session: status 401 with code `UNAUTHENTICATED`. The site treats that as "signed out", not as an error.
+- `Transaction.amount` is always a positive integer; the site derives the sign from `kind` (`BET`, `DOUBLE`, `SPLIT` are debits).
+- Fields the site renders: `Transaction.createdAt | kind | outcome | handId | amount | balanceAfter`, `Run.endedAt | roundsSurvived | net`. Lists newest first.
+- Proposed, pending Edgar: `INVALID_USERNAME` error code for `POST /session`, and `DELETE /api/engine/session` to sign out.
+- When you publish the engine types as TypeScript, the site switches `src/web/engine-types.ts` to import them.
+
+### How the game mounts in the site (Heriberto, proposed)
+
+- Export a client component from `src/game/ui/BlackjackTable.tsx`:
+
+  ```ts
+  export function BlackjackTable(props: { onMoneyChanged: () => void }): JSX.Element
+  ```
+
+- The site renders it on `/play` under the header, which already shows the balance, inside a centered column up to `max-w-5xl`.
+- Call `onMoneyChanged()` after every response that moved money: bet accepted, double or split debited, round settled, run closed. The site then refetches `/api/engine/me` (AC-14.2).
+- The player is already signed in when the table renders; your routes read the account from the session cookie via `engine.getSessionAccount(req)`.
+
+### Shared theme
+
+Defined in `src/app/globals.css`. Use the tokens so the table and the site look like one place.
+
+| Use | Tailwind / class |
+|---|---|
+| Colors | `bg-bj-night`, `bg-bj-wood`, `border-bj-line`, `text-bj-text`, `text-bj-muted`, `text-bj-candle`, `bg-bj-blood`, `text-bj-ember` (errors), `text-bj-moss` (wins) |
+| Fonts | `font-sans` (IM Fell English), `font-display` (small caps, titles), `font-mono` (Special Elite, numbers) |
+| Paper card with ink text | `.bj-paper` |
+| Primary button | `.bj-button` |
+| Input on paper | `.bj-input` |
+| Candlelight (candles, balance) | `.bj-candle-glow` (respects reduced motion) |
+
+Inscryption is a mood reference only: draw or generate your own art, never copy its assets.
 
 ## Fixtures
 

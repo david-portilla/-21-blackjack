@@ -44,15 +44,15 @@ export default function LobbyPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 p-6">
-      <section>
-        <h1 className="text-2xl font-semibold">Welcome, {account.username}</h1>
-        <p className="mt-2 text-lg">
-          Balance: <strong>{account.balance}</strong> credits
+      <section className="text-center">
+        <h1 className="font-display text-3xl">Welcome, {account.username}</h1>
+        <p className="mt-3 text-lg text-bj-muted">
+          Balance: <strong className="bj-candle-glow font-mono text-2xl">{account.balance}</strong> credits
         </p>
       </section>
 
-      <form onSubmit={onDeposit} className="flex flex-col gap-3">
-        <label htmlFor="amount" className="text-sm">
+      <form onSubmit={onDeposit} className="bj-paper flex flex-col gap-3 p-6">
+        <label htmlFor="amount" className="italic">
           Add fictional credits
         </label>
         <div className="flex gap-2">
@@ -61,16 +61,16 @@ export default function LobbyPage() {
             inputMode="numeric"
             value={amount}
             onChange={(e) => onAmountChange(e.target.value)}
-            className="w-full rounded border border-neutral-600 bg-transparent px-3 py-2"
+            className="bj-input w-full font-mono"
           />
-          <button type="submit" disabled={busy} className="rounded bg-neutral-200 px-4 py-2 text-neutral-900 disabled:opacity-50">
+          <button type="submit" disabled={busy} className="bj-button">
             Deposit
           </button>
         </div>
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-bj-blood">{error}</p>}
       </form>
 
-      <Link href="/play" className="rounded border border-neutral-500 px-4 py-3 text-center">
+      <Link href="/play" className="bj-button py-3 text-center text-lg">
         Take a seat at the table
       </Link>
     </main>

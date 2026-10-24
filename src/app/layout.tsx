@@ -1,14 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { IM_Fell_English, IM_Fell_English_SC, Special_Elite } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fell = IM_Fell_English({
+  variable: "--font-fell",
+  weight: "400",
+  style: ["normal", "italic"],
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const fellSc = IM_Fell_English_SC({
+  variable: "--font-fell-sc",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+const elite = Special_Elite({
+  variable: "--font-elite",
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -21,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fell.variable} ${fellSc.variable} ${elite.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

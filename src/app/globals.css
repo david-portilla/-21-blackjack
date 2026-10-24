@@ -1,26 +1,129 @@
 @import "tailwindcss";
 
+/*
+  Shared theme. Owner: David. Used by the site and the game UI (see src/contracts/README.md).
+  Mood reference: Inscryption's candlelit cabin. Mood only: no copied assets, fonts or art.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bj-night: #0f0b08;
+  --bj-wood: #241812;
+  --bj-wood-light: #3a281c;
+  --bj-line: #4b3727;
+  --bj-paper: #d8c7a0;
+  --bj-paper-dark: #b49f74;
+  --bj-ink: #1c140e;
+  --bj-text: #e6d8b8;
+  --bj-muted: #a08d6c;
+  --bj-candle: #e9a640;
+  --bj-blood: #8e1f1a;
+  --bj-ember: #e0664f;
+  --bj-moss: #8a9a5b;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-bj-night: var(--bj-night);
+  --color-bj-wood: var(--bj-wood);
+  --color-bj-wood-light: var(--bj-wood-light);
+  --color-bj-line: var(--bj-line);
+  --color-bj-paper: var(--bj-paper);
+  --color-bj-paper-dark: var(--bj-paper-dark);
+  --color-bj-ink: var(--bj-ink);
+  --color-bj-text: var(--bj-text);
+  --color-bj-muted: var(--bj-muted);
+  --color-bj-candle: var(--bj-candle);
+  --color-bj-blood: var(--bj-blood);
+  --color-bj-ember: var(--bj-ember);
+  --color-bj-moss: var(--bj-moss);
+  --font-sans: var(--font-fell), Georgia, serif;
+  --font-display: var(--font-fell-sc), Georgia, serif;
+  --font-mono: var(--font-elite), "Courier New", monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--bj-text);
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgb(233 166 64 / 0.12), transparent 70%),
+    radial-gradient(ellipse at center, var(--bj-wood) 0%, var(--bj-night) 80%);
+  background-color: var(--bj-night);
+  background-attachment: fixed;
+  font-family: var(--font-fell), Georgia, serif;
+}
+
+/* Film grain over everything; purely decorative. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@layer components {
+  /* Aged paper panel with ink text: forms, cards, the "book". */
+  .bj-paper {
+    color: var(--bj-ink);
+    background:
+      radial-gradient(ellipse at 30% 20%, rgb(255 255 255 / 0.18), transparent 60%),
+      linear-gradient(160deg, var(--bj-paper), var(--bj-paper-dark));
+    border-radius: 3px;
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.35),
+      0 18px 40px rgb(0 0 0 / 0.55),
+      inset 0 0 40px rgb(90 60 20 / 0.35);
+  }
+
+  .bj-button {
+    font-family: var(--font-fell-sc), Georgia, serif;
+    letter-spacing: 0.04em;
+    color: var(--bj-text);
+    background: linear-gradient(var(--bj-blood), #5f1410);
+    border: 1px solid #b23a2e;
+    border-radius: 3px;
+    padding: 0.5rem 1.1rem;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 0.5);
+    transition: filter 150ms, transform 150ms;
+  }
+  .bj-button:hover:not(:disabled) {
+    filter: brightness(1.15);
+  }
+  .bj-button:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .bj-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .bj-input {
+    color: var(--bj-ink);
+    background: rgb(255 250 235 / 0.5);
+    border: 1px solid rgb(28 20 14 / 0.5);
+    border-radius: 2px;
+    padding: 0.5rem 0.75rem;
+  }
+  .bj-input:focus {
+    outline: 2px solid var(--bj-blood);
+    outline-offset: 1px;
+  }
+
+  /* Warm flicker for anything lit by a candle (candles, balance). */
+  .bj-candle-glow {
+    color: var(--bj-candle);
+    text-shadow: 0 0 12px rgb(233 166 64 / 0.6);
+    animation: bj-flicker 3.2s ease-in-out infinite;
+  }
+}
+
+@keyframes bj-flicker {
+  0%, 100% { opacity: 1; }
+  45% { opacity: 0.86; }
+  50% { opacity: 0.95; }
+  70% { opacity: 0.88; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bj-candle-glow {
+    animation: none;
+  }
 }

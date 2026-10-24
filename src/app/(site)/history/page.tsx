@@ -35,13 +35,13 @@ export default function HistoryPage() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-10 p-6">
       <section>
-        <h1 className="mb-4 text-2xl font-semibold">Transactions</h1>
-        {errors.transactions && <p className="text-sm text-red-400">{errors.transactions}</p>}
-        {transactions?.length === 0 && <p className="text-neutral-400">No transactions yet.</p>}
+        <h1 className="mb-4 font-display text-3xl">Transactions</h1>
+        {errors.transactions && <p className="text-sm text-bj-ember">{errors.transactions}</p>}
+        {transactions?.length === 0 && <p className="text-bj-muted">No transactions yet.</p>}
         {transactions && transactions.length > 0 && (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-neutral-400">
+              <thead className="text-bj-muted">
                 <tr>
                   <th className="py-2 pr-4">When</th>
                   <th className="py-2 pr-4">Type</th>
@@ -52,18 +52,18 @@ export default function HistoryPage() {
               </thead>
               <tbody>
                 {transactions.map((t) => (
-                  <tr key={t.transactionId} className="border-t border-neutral-800">
+                  <tr key={t.transactionId} className="border-t border-bj-line">
                     <td className="py-2 pr-4">{new Date(t.createdAt).toLocaleString()}</td>
                     <td className="py-2 pr-4">
                       {t.kind}
                       {t.outcome && ` (${t.outcome})`}
                     </td>
                     <td className="py-2 pr-4 font-mono text-xs">{t.handId ?? ""}</td>
-                    <td className="py-2 pr-4 text-right">
+                    <td className={`py-2 pr-4 text-right font-mono ${DEBITS.includes(t.kind) ? "text-bj-ember" : "text-bj-moss"}`}>
                       {DEBITS.includes(t.kind) ? "-" : "+"}
                       {t.amount}
                     </td>
-                    <td className="py-2 text-right">{t.balanceAfter}</td>
+                    <td className="py-2 text-right font-mono">{t.balanceAfter}</td>
                   </tr>
                 ))}
               </tbody>
@@ -73,12 +73,12 @@ export default function HistoryPage() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-2xl font-semibold">Candle runs</h2>
-        {errors.runs && <p className="text-sm text-red-400">{errors.runs}</p>}
-        {runs?.length === 0 && <p className="text-neutral-400">No finished runs yet.</p>}
+        <h2 className="mb-4 font-display text-3xl">Candle runs</h2>
+        {errors.runs && <p className="text-sm text-bj-ember">{errors.runs}</p>}
+        {runs?.length === 0 && <p className="text-bj-muted">No finished runs yet.</p>}
         {best && (
           <p className="mb-3">
-            Best run: <strong>{best.roundsSurvived}</strong> rounds survived
+            Best run: <strong className="bj-candle-glow font-mono">{best.roundsSurvived}</strong> rounds survived
           </p>
         )}
         <ul className="flex flex-col gap-1 text-sm">

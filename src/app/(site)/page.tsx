@@ -37,10 +37,13 @@ export default function SignInPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 p-6">
-      <h1 className="text-3xl font-semibold">Blackjack, your way</h1>
-      <form onSubmit={onSubmit} className="flex flex-col gap-3">
-        <label htmlFor="username" className="text-sm">
+    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-8 p-6">
+      <div className="text-center">
+        <h1 className="font-display text-4xl text-bj-candle">Blackjack, your way</h1>
+        <p className="mt-2 italic text-bj-muted">The dealer has been waiting for you.</p>
+      </div>
+      <form onSubmit={onSubmit} className="bj-paper flex flex-col gap-3 p-8">
+        <label htmlFor="username" className="italic">
           Sign the book with your name
         </label>
         <input
@@ -48,12 +51,12 @@ export default function SignInPage() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           autoComplete="username"
-          className="rounded border border-neutral-600 bg-transparent px-3 py-2"
+          className="bj-input"
         />
-        <button type="submit" disabled={busy} className="rounded bg-neutral-200 px-3 py-2 text-neutral-900 disabled:opacity-50">
+        <button type="submit" disabled={busy} className="bj-button mt-2">
           {busy ? "Signing..." : "Enter"}
         </button>
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-bj-blood">{error}</p>}
       </form>
     </main>
   );
