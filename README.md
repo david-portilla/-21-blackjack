@@ -12,6 +12,8 @@ cp .env.example .env   # set SESSION_SECRET; data lives in data/casino.db (SQLit
 pnpm dev               # http://localhost:3000
 ```
 
+To let teammates or the peer playtest play from their laptops on the same network, run `pnpm demo` instead: it listens on every interface (others open `http://<your-ip>:3000`, e.g. from `ipconfig getifaddr en0`) and uses a local `SESSION_SECRET` if none is set.
+
 `pnpm check` runs typecheck, lint and tests (same as CI).
 
 `pnpm e2e` walks the player journey in Chromium at desktop and phone width (Playwright, local only; first time: `pnpm exec playwright install chromium`). It runs on the real engine and game. Report: `pnpm exec playwright show-report`.

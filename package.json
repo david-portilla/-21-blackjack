@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "demo": "SESSION_SECRET=${SESSION_SECRET:-local-demo-secret} next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
