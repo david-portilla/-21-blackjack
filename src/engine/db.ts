@@ -39,6 +39,13 @@ CREATE TABLE IF NOT EXISTS transactions (
   created_at TEXT,
   UNIQUE (account_id, idempotency_key)
 );
+CREATE TABLE IF NOT EXISTS runs (
+  id TEXT PRIMARY KEY,
+  account_id TEXT NOT NULL,
+  rounds_survived INTEGER NOT NULL,
+  net INTEGER NOT NULL,
+  ended_at TEXT NOT NULL
+);
 `;
 
 /** Opens a SQLite database (file path or ":memory:") and creates the engine tables if missing. */
