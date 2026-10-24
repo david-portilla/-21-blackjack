@@ -50,7 +50,7 @@ type Outcome = 'win'|'push'|'loss'|'blackjack'
 type TxKind = 'DEPOSIT'|'BET'|'DOUBLE'|'SPLIT'|'PAYOUT'
 
 type ErrorCode =
-  | 'INVALID_AMOUNT' | 'INSUFFICIENT_FUNDS' | 'ACCOUNT_NOT_FOUND' | 'UNAUTHENTICATED'
+  | 'INVALID_AMOUNT' | 'INVALID_USERNAME' | 'INSUFFICIENT_FUNDS' | 'ACCOUNT_NOT_FOUND' | 'UNAUTHENTICATED'
   | 'ROUND_NOT_FOUND' | 'ROUND_IN_PROGRESS' | 'INVALID_ACTION' | 'STALE_VERSION'
   | 'IDEMPOTENCY_CONFLICT'
 
@@ -64,8 +64,8 @@ interface CasinoEngine {
   getSessionAccount(req: Request): Promise<{ accountId: string } | null>
   debit(input: {
     accountId: string; roundId: string; handId: string
-    kind: 'BET'|'DOUBLE'|'SPLIT'; amount: number; idempotencyKey: string
-  }): Promise<Transaction>        // throws INSUFFICIENT_FUNDS | INVALID_AMOUNT | IDEMPOTENCY_CONFLICT
+    kind: 'BET'|'DOUBLE'|'SPLIT'; amount?: number; idempotencyKey: string  // amount only for BET
+  }): Promise<Transaction>        // throws INSUFFICIENT_FUNDS | INVALID_AMOUNT | ROUND_NOT_FOUND
   settle(input: {
     accountId: string; roundId: string; handId: string
     outcome: Outcome; idempotencyKey: string
@@ -79,7 +79,11 @@ type Transaction = {
 }
 ```
 
-Rules the engine enforces: `BET` amount > 0; `DOUBLE` amount equals the hand's current stake; `SPLIT` amount equals hand 0's `BET`; same key + same payload returns the original transaction; same key + different payload is `IDEMPOTENCY_CONFLICT`; check-and-debit is one atomic DB operation.
+Rules the engine enforces: `BET` amount is a positive whole number; `DOUBLE` and `SPLIT` amounts are computed by the engine (`DOUBLE` = the hand's current stake, `SPLIT` = hand 0's `BET`), any `amount` sent is ignored; a repeated idempotency key returns the original transaction and changes nothing (the payload is not compared, so `IDEMPOTENCY_CONFLICT` is not thrown); check-and-debit is one atomic operation. Errors are thrown as `EngineError` with a `code`.
+
+Types: `src/contracts/engine.ts`.
+
+There is no `FakeEngine`: tests use the real engine on an in-memory database, `createEngine(openDb(':memory:'))` from `src/engine/`.
 
 **Proposed for the twist (R16, pending Edgar and Heriberto):**
 
@@ -98,13 +102,11 @@ type Run = {
 
 Idempotency: `closeRun` with the same `runId` returns the stored run.
 
-A `FakeEngine` (in-memory, same interface) lives next to the interface so the game can be built before the real engine exists.
-
 ## Engine: HTTP API for the website (Edgar)
 
 | Method | Path | Body | Returns |
 |---|---|---|---|
-| POST | `/api/engine/session` | `{ username }` | `{ accountId, username, balance }`, sets cookie (R1) |
+| POST | `/api/engine/session` | `{ username }` (non-empty after trim, exact match) | `{ accountId, username, balance }`, sets cookie (R1) |
 | GET | `/api/engine/me` | | `{ accountId, username, balance }` |
 | POST | `/api/engine/deposits` | `{ amount, idempotencyKey }` | `Transaction` (R2) |
 | GET | `/api/engine/transactions` | | `Transaction[]`, newest first (R13) |

@@ -12,6 +12,7 @@ export type TxKind = "DEPOSIT" | "BET" | "DOUBLE" | "SPLIT" | "PAYOUT";
 
 export type ErrorCode =
   | "INVALID_AMOUNT"
+  | "INVALID_USERNAME"
   | "INSUFFICIENT_FUNDS"
   | "ACCOUNT_NOT_FOUND"
   | "UNAUTHENTICATED"
