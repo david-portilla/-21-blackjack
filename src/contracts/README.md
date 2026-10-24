@@ -106,7 +106,7 @@ Idempotency: `closeRun` with the same `runId` returns the stored run. `net` = PA
 
 | Method | Path | Body | Returns |
 |---|---|---|---|
-| POST | `/api/engine/session` | `{ username }` (stored and matched exactly as sent; validation lives in the site) | `{ accountId, username, balance }`, sets cookie (R1) |
+| POST | `/api/engine/session` | `{ username }` (trimmed, then stored and matched as sent; validation lives in the site) | `{ accountId, username, balance }`, sets cookie (R1) |
 | DELETE | `/api/engine/session` | | 204, clears the cookie (sign out) |
 | GET | `/api/engine/me` | | `{ accountId, username, balance }` |
 | POST | `/api/engine/deposits` | `{ amount, idempotencyKey }` | `Transaction` (R2) |
