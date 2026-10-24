@@ -28,7 +28,7 @@ Bring players back for **how they play, not how much they bet**. One daily chall
 | Part | Owner | State |
 |---|---|---|
 | Rules + tests (`src/contracts/omens.ts`) | David drafted, Edgar approves | done, pending approval |
-| `GET /api/engine/omens` | Edgar | open: `issues/01-engine-route.md` |
+| `GET /api/engine/omens` | Edgar (written by David) | done: `issues/01-engine-route.md` |
 | Lobby panel, header mark | David | done |
 | Table hint when an omen is fulfilled | Heriberto | optional: `issues/02-table-hint.md` |
 

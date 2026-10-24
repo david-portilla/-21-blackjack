@@ -38,6 +38,5 @@ Current state; updated before the demo (AC-15.4).
 - Username rules (3 to 20 letters, digits or `_`) live only in the sign-in form; the engine trims the name and stores it as sent, case-sensitive (Q2).
 - The real engine needs `SESSION_SECRET` in `.env` (see `.env.example`).
 - Data is a local SQLite file (`data/casino.db`, D-017); the demo runs locally, not on Vercel.
-- Omens (R17) show "The omens are silent today." until the engine serves `GET /api/engine/omens`.
 - The browser journey (`pnpm e2e`) runs locally, not in CI; CI runs `pnpm check` only.
 - The site is checked in Chromium at desktop width and at 390 px; other sizes and browsers are untested.

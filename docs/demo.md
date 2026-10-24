@@ -66,5 +66,4 @@ If the table misbehaves live: `pnpm e2e` passing on the same machine proves the 
 ## Open gaps to close before 12:30
 
 - `roundsSurvived` vs `roundsWon` in `RunView` (AC-16.7): Heriberto and Edgar to agree in `docs/requirements.md`.
-- `GET /api/engine/omens` (Edgar, `.scratch/omens/issues/01-engine-route.md`).
 - README "Known limitations" refreshed.
