@@ -52,6 +52,20 @@ Ask your human which owner they are if it is not obvious.
 
 Shared skills live in `skills/<name>/SKILL.md` (Agent Skills format); `.claude/skills` and `.agents/skills` are symlinks to that folder. If your tool reads another path, link it locally. Personal skills stay in your own environment and are not committed. Catalogue: `skills/README.md`.
 
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as local markdown under `.scratch/<feature>/`; cross-owner requests stay GitHub issues labelled `needs:<owner>`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`), written as a `Status:` line in each issue file. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: vocabulary in `docs/requirements.md` (plus `GLOSSARY.md` once created), decisions in `docs/decisions.md`. See `docs/agents/domain.md`.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know
