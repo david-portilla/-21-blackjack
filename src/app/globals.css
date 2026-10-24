@@ -39,6 +39,11 @@
   --font-mono: var(--font-elite), "Courier New", monospace;
 }
 
+/* IM Fell reads small: a 18px base scales text and spacing together. */
+html {
+  font-size: 112.5%;
+}
+
 body {
   color: var(--bj-text);
   background:
