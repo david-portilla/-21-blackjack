@@ -122,7 +122,7 @@ Inspired by Inscryption, which is also the visual reference for the game and the
 
 Resolved:
 - Q1 If every player hand busts, the dealer still reveals and plays to 17 (literal brief, no special case). Proposed by David, pending Heriberto.
-- Q2 Username: 3 to 20 chars, letters, digits, `_`, case-insensitive unique; using an existing name signs into that account. Proposed by David, pending Edgar.
+- Q2 Username: the engine stores and matches it exactly as sent, with no rules; any validation lives in the site. Using an existing name signs into that account. Decided by Edgar.
 - Q3 Bet: min 1, max = balance, no fixed cap. Proposed by David, pending Heriberto and Edgar.
 - Q4 A split hand reaching 21 finishes automatically: settled by the brief ("A hand reaching 21 finishes automatically"), AC-7.3.
 - Q5 Twist: Candles (R16), Inscryption-inspired. Agreed by David; team to confirm.

@@ -85,7 +85,7 @@ Types: `src/contracts/engine.ts`.
 
 There is no `FakeEngine`: tests use the real engine on an in-memory database, `createEngine(openDb(':memory:'))` from `src/engine/`.
 
-**Proposed for the twist (R16, pending Edgar and Heriberto):**
+**Twist (R16), accepted by Edgar; types in `src/contracts/engine.ts` (`Run`, `CloseRunInput`):**
 
 ```ts
 interface CasinoEngine {
@@ -100,17 +100,18 @@ type Run = {
 }
 ```
 
-Idempotency: `closeRun` with the same `runId` returns the stored run.
+Idempotency: `closeRun` with the same `runId` returns the stored run. `net` = PAYOUT minus BET, DOUBLE and SPLIT over the account's transactions of `roundIds`; it never changes the balance (AC-16.8).
 
 ## Engine: HTTP API for the website (Edgar)
 
 | Method | Path | Body | Returns |
 |---|---|---|---|
-| POST | `/api/engine/session` | `{ username }` (non-empty after trim, exact match) | `{ accountId, username, balance }`, sets cookie (R1) |
+| POST | `/api/engine/session` | `{ username }` (stored and matched exactly as sent; validation lives in the site) | `{ accountId, username, balance }`, sets cookie (R1) |
+| DELETE | `/api/engine/session` | | 204, clears the cookie (sign out) |
 | GET | `/api/engine/me` | | `{ accountId, username, balance }` |
 | POST | `/api/engine/deposits` | `{ amount, idempotencyKey }` | `Transaction` (R2) |
 | GET | `/api/engine/transactions` | | `Transaction[]`, newest first (R13) |
-| GET | `/api/engine/runs` | | `Run[]`, newest first (R16, proposed) |
+| GET | `/api/engine/runs` | | `Run[]`, newest first (R16) |
 
 ## Game: HTTP API (Heriberto)
 
@@ -167,7 +168,8 @@ How the site consumes your parts. The site already runs against an in-browser fa
 - `GET /api/engine/me` without a session: status 401 with code `UNAUTHENTICATED`. The site treats that as "signed out", not as an error.
 - `Transaction.amount` is always a positive integer; the site derives the sign from `kind` (`BET`, `DOUBLE`, `SPLIT` are debits).
 - Fields the site renders: `Transaction.createdAt | kind | outcome | handId | amount | balanceAfter`, `Run.endedAt | roundsSurvived | net`. Lists newest first.
-- Proposed, pending Edgar: `INVALID_USERNAME` error code for `POST /session`, and `DELETE /api/engine/session` to sign out.
+- Accepted by Edgar: `INVALID_USERNAME` (only for a non-string username) and `DELETE /api/engine/session` to sign out. `ApiError.message` is a readable English sentence for the player.
+- The engine types are published in `src/contracts/engine.ts`.
 - When you publish the engine types as TypeScript, the site switches `src/web/engine-types.ts` to import them.
 
 ### How the game mounts in the site (Heriberto, proposed)

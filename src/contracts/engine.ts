@@ -34,6 +34,22 @@ export type SettleInput = {
   idempotencyKey: string;
 };
 
+/** A finished Candles run (R16). `net` is computed by the engine from the run's transactions. */
+export type Run = {
+  runId: string;
+  accountId: string;
+  roundsSurvived: number;
+  net: number;
+  endedAt: string;
+};
+
+export type CloseRunInput = {
+  accountId: string;
+  runId: string;
+  roundIds: string[];
+  roundsSurvived: number;
+};
+
 /** In-process interface the game uses. Not exposed over HTTP. */
 export interface CasinoEngine {
   getSessionAccount(req: Request): Promise<{ accountId: string } | null>;
@@ -41,6 +57,8 @@ export interface CasinoEngine {
   debit(input: DebitInput): Promise<Transaction>;
   /** Throws EngineError: ROUND_NOT_FOUND. The payout amount is computed by the engine (R11). */
   settle(input: SettleInput): Promise<Transaction>;
+  /** Records the ended run (AC-16.9). Same `runId` returns the stored run. Never moves money (AC-16.8). */
+  closeRun(input: CloseRunInput): Promise<Run>;
 }
 
 /** Error thrown by the engine; `code` maps 1:1 to ApiError codes. */
