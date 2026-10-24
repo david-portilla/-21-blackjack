@@ -9,13 +9,9 @@ test.beforeEach(async ({ page }) => {
   consoleErrors = [];
   page.on("pageerror", (e) => consoleErrors.push(e.message));
   page.on("console", (m) => {
-    // The browser logs these responses, but they are expected: a signed-out GET /api/engine/me answers 401
-    // by contract, and GET /api/engine/runs is still a proposal (404) on the real engine.
-    const url = m.location().url;
-    const expected =
-      (m.text().includes("status of 401") && url.endsWith("/api/engine/me")) ||
-      (REAL_ENGINE && m.text().includes("status of 404") && url.endsWith("/api/engine/runs"));
-    if (m.type() === "error" && !expected) consoleErrors.push(m.text());
+    // A signed-out GET /api/engine/me answers 401 by contract; the browser logs it, it is not an error.
+    const expected401 = m.text().includes("status of 401") && m.location().url.endsWith("/api/engine/me");
+    if (m.type() === "error" && !expected401) consoleErrors.push(m.text());
   });
 });
 
@@ -87,7 +83,7 @@ test("AC-13.1 history lists the deposit with its balance", async ({ page }) => {
   await expect(page).toHaveURL("/history");
   const row = page.getByRole("row").filter({ hasText: "DEPOSIT" });
   await expect(row).toContainText("+100");
-  await expect(page.getByText(/No finished runs yet\.|Candle runs are not available yet\./)).toBeVisible();
+  await expect(page.getByText("No finished runs yet.")).toBeVisible();
 });
 
 test("AC-14.1 AC-14.2 a full round from the lobby: bet, play, settle, history", async ({ page }) => {
@@ -125,4 +121,12 @@ test("the session and balance survive a reload", async ({ page }) => {
   await expect(balance(page)).toHaveText("40");
   await page.goto("/");
   await expect(page).toHaveURL("/lobby");
+});
+
+test("signing out returns to sign-in and protects private pages", async ({ page }) => {
+  await signIn(page);
+  await page.getByRole("button", { name: "Leave" }).click();
+  await expect(page).toHaveURL("/");
+  await page.goto("/lobby");
+  await expect(page).toHaveURL("/");
 });

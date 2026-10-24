@@ -1,10 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useAccount } from "./account-context";
+import { messageOf } from "./engine-client";
+import { engineClient } from "./engine";
 
 export function SiteHeader() {
-  const { account, error } = useAccount();
+  const { account, error, setAccount } = useAccount();
+  const [signOutError, setSignOutError] = useState<string | null>(null);
+
+  // Clearing the account sends private pages back to sign-in (useRequireAccount).
+  async function onSignOut() {
+    try {
+      await engineClient.signOut();
+      setAccount(null);
+    } catch (e) {
+      setSignOutError(messageOf(e));
+    }
+  }
 
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-bj-line bg-bj-night/60 px-6 py-4">
@@ -23,9 +37,12 @@ export function SiteHeader() {
             </strong>{" "}
             credits
           </span>
+          <button type="button" onClick={onSignOut} className="hover:text-bj-text">
+            Leave
+          </button>
         </nav>
       )}
-      {error && <p className="w-full text-sm text-bj-ember">{error}</p>}
+      {(error ?? signOutError) && <p className="w-full text-sm text-bj-ember">{error ?? signOutError}</p>}
     </header>
   );
 }

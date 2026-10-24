@@ -33,10 +33,10 @@ Working agreement: `AGENTS.md` and `docs/playbook.md`.
 Current state; updated before the demo (AC-15.4).
 
 - Sign-in is a username only, with no password, by design: credits are fictional (D-008).
-- There is no sign-out yet (`DELETE /api/engine/session` is proposed). To switch player, clear the site's cookies, or its localStorage when using the fake engine.
-- Username rules (3 to 20 letters, digits or `_`) are checked in the sign-in form; the engine check and its error code are pending.
+- Username rules (3 to 20 letters, digits or `_`) live only in the sign-in form; the engine trims the name and stores it as sent, case-sensitive (Q2).
+- The real engine needs `SESSION_SECRET` in `.env` (see `.env.example`).
 - With `NEXT_PUBLIC_ENGINE_FAKE=1` the site runs on an in-browser fake engine and an in-browser game emulation (D-016): data lives in that browser's localStorage only, and the hidden card is in the browser, so AC-4.3 holds only once the real game is mounted.
 - The real game table is not mounted yet: `/play` uses the emulation with the fake engine and a static preview otherwise, until `BlackjackTable` lands.
-- Candle runs (R16) against the real engine depend on `GET /api/engine/runs` and `closeRun`, both still proposals.
+- On the real engine, candle runs are recorded only once the real game calls `closeRun`; until then History shows none.
 - The browser journey (`pnpm e2e`) runs locally, not in CI; CI runs `pnpm check` only.
 - The site is checked in Chromium at desktop width and at 390 px; other sizes and browsers are untested.

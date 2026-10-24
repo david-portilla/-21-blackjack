@@ -65,9 +65,8 @@ export function createFakeEngineClient(store: () => KeyValueStore, now = () => n
   return {
     async signIn(username) {
       const s = load();
-      // Same rule as the engine: trimmed, non-empty, exact (case-sensitive) match.
+      // Same rule as the engine (Q2): trimmed, then stored and matched as sent. The site validates the format.
       const name = username.trim();
-      if (!name) throw new EngineError("INVALID_USERNAME", "Write a name to sign the book");
       const account = Object.values(s.accounts).find((a) => a.username === name) ?? {
         accountId: crypto.randomUUID(),
         username: name,
@@ -77,6 +76,12 @@ export function createFakeEngineClient(store: () => KeyValueStore, now = () => n
       s.session = account.accountId;
       save(s);
       return account;
+    },
+
+    async signOut() {
+      const s = load();
+      s.session = null;
+      save(s);
     },
 
     async me() {

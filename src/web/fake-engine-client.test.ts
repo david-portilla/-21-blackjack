@@ -25,8 +25,10 @@ describe("fake engine client", () => {
     expect((await engine.signIn("leshy")).accountId).not.toBe(first.accountId);
   });
 
-  it("an empty username is INVALID_USERNAME", async () => {
-    await expect(engine.signIn("   ")).rejects.toMatchObject({ code: "INVALID_USERNAME" });
+  it("signing out ends the session", async () => {
+    await engine.signIn("player");
+    await engine.signOut();
+    expect(await engine.me()).toBeNull();
   });
 
   it("AC-2.1 a deposit adds exactly its amount and records a DEPOSIT", async () => {

@@ -12,6 +12,7 @@ export class EngineError extends Error {
 
 export interface EngineClient {
   signIn(username: string): Promise<Account>;
+  signOut(): Promise<void>;
   me(): Promise<Account | null>;
   deposit(amount: number, idempotencyKey: string): Promise<Transaction>;
   transactions(): Promise<Transaction[]>;
@@ -25,7 +26,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } catch {
     throw new EngineError("NETWORK", "Could not reach the casino engine");
   }
-  const body: unknown = await res.json().catch(() => null);
+  const body: unknown = res.status === 204 ? null : await res.json().catch(() => null);
   if (!res.ok) {
     const error = (body as ApiError | null)?.error;
     throw new EngineError(error?.code ?? "UNKNOWN", error?.message ?? `Engine responded ${res.status}`);
@@ -36,6 +37,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const httpEngineClient: EngineClient = {
   signIn: (username) =>
     request("/api/engine/session", { method: "POST", body: JSON.stringify({ username }) }),
+  signOut: () => request("/api/engine/session", { method: "DELETE" }),
   me: async () => {
     try {
       return await request<Account>("/api/engine/me");
@@ -50,19 +52,6 @@ export const httpEngineClient: EngineClient = {
   runs: () => request("/api/engine/runs"),
 };
 
-// The engine's messages are its error codes; the player sees these instead.
-const PLAYER_MESSAGE: Partial<Record<EngineError["code"], string>> = {
-  INVALID_AMOUNT: "Use a positive whole number",
-  INVALID_USERNAME: "Write a name to sign the book",
-  INSUFFICIENT_FUNDS: "Not enough credits",
-  UNAUTHENTICATED: "Sign in first",
-  ROUND_IN_PROGRESS: "Finish the round on the table first",
-  INVALID_ACTION: "That move is not allowed now",
-  STALE_VERSION: "The table moved on; refreshing",
-  NETWORK: "Could not reach the casino",
-};
-
 export function messageOf(e: unknown): string {
-  if (e instanceof EngineError) return PLAYER_MESSAGE[e.code] ?? e.message;
   return e instanceof Error ? e.message : "Something went wrong";
 }
