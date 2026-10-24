@@ -27,8 +27,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const setAccount = useCallback((next: Account | null) => {
     latest.current++;
     setAccountState(next);
+    setLoading(false);
   }, []);
 
+  // Only the latest call may settle the state, `loading` included: a discarded call ending "not loading,
+  // no account" would bounce a signed-in player to sign-in (seen on reload, where dev runs effects twice).
   const refresh = useCallback(() => {
     const call = ++latest.current;
     return engineClient
@@ -37,11 +40,13 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         if (call !== latest.current) return;
         setAccountState(me);
         setError(null);
+        setLoading(false);
       })
       .catch((e) => {
-        if (call === latest.current) setError(messageOf(e));
-      })
-      .finally(() => setLoading(false));
+        if (call !== latest.current) return;
+        setError(messageOf(e));
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {

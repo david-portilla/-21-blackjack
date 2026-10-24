@@ -9,12 +9,15 @@ test.beforeEach(async ({ page }) => {
   consoleErrors = [];
   page.on("pageerror", (e) => consoleErrors.push(e.message));
   page.on("console", (m) => {
-    // The browser logs these, but they are expected: a signed-out GET /api/engine/me answers 401 by
-    // contract, and GET /api/engine/omens is a proposal the real engine may not serve yet (R17).
+    // The browser logs these, but they are expected by contract: a signed-out GET /api/engine/me is 401,
+    // GET /api/game/{rounds,runs}/current is 404 when there is none, and GET /api/engine/omens is a
+    // proposal the real engine may not serve yet (R17).
     const url = m.location().url;
+    const is404 = m.text().includes("status of 404");
     const expected =
       (m.text().includes("status of 401") && url.endsWith("/api/engine/me")) ||
-      (REAL_ENGINE && m.text().includes("status of 404") && url.endsWith("/api/engine/omens"));
+      (is404 && (url.endsWith("/api/game/rounds/current") || url.endsWith("/api/game/runs/current"))) ||
+      (REAL_ENGINE && is404 && url.endsWith("/api/engine/omens"));
     if (m.type() === "error" && !expected) consoleErrors.push(m.text());
   });
 });
@@ -101,25 +104,25 @@ test("AC-13.1 history lists the deposit with its balance", async ({ page }) => {
 });
 
 test("AC-14.1 AC-14.2 a full round from the lobby: bet, play, settle, history", async ({ page }) => {
-  test.skip(REAL_ENGINE, "No playable table on the real engine until BlackjackTable lands (D-016)");
   await signIn(page);
   await deposit(page, "100");
   await expect(balance(page)).toHaveText("100");
   await page.getByRole("link", { name: "Take a seat at the table" }).click();
   await expect(page).toHaveURL("/play");
 
-  await page.getByLabel("Your bet").fill("10");
-  await page.getByRole("button", { name: "Deal" }).click();
+  await page.locator("#stake").fill("10");
+  // Each step waits for the game's own response, so the loop never reads the table mid-update.
+  const answered = (path: RegExp) => page.waitForResponse((r) => path.test(new URL(r.url()).pathname));
+  await Promise.all([answered(/^\/api\/game\/rounds$/), page.getByRole("button", { name: "Deal" }).click()]);
   // The deck is random: stand on every hand until the round settles (a natural settles at once).
   const stand = page.getByRole("button", { name: "Stand" });
-  const dealAgain = page.getByRole("button", { name: "Deal" });
-  await expect(stand.or(dealAgain)).toBeVisible();
-  while (await stand.isVisible()) {
-    await stand.click();
-    await expect(stand.or(dealAgain)).toBeVisible();
+  const settled = page.getByText(/returns \d+/).first();
+  await expect(stand.or(settled)).toBeVisible();
+  while (!(await settled.isVisible())) {
+    await Promise.all([answered(/\/actions$/), stand.click()]);
+    await expect(stand.or(settled)).toBeVisible();
   }
-  await expect(dealAgain).toBeVisible();
-  await expect(page.getByTestId("hand").first()).toContainText(/Win|Blackjack|Push|Loss/);
+  await expect(page.getByRole("button", { name: "Deal" })).toBeVisible();
   await expect(balance(page)).toHaveText(/^(90|100|110)$/);
 
   await page.getByRole("link", { name: "History" }).click();
@@ -143,4 +146,13 @@ test("signing out returns to sign-in and protects private pages", async ({ page 
   await expect(page).toHaveURL("/");
   await page.goto("/lobby");
   await expect(page).toHaveURL("/");
+});
+
+test("AC-1.3 reloading a private page keeps the player on it", async ({ page }) => {
+  await signIn(page);
+  for (const path of ["/play", "/history"]) {
+    await page.goto(path);
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveURL(path);
+  }
 });
