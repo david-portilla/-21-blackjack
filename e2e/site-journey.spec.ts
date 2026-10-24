@@ -1,8 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// The player journey through the site (R1, R2, R13, R14). Runs against the fake engine by default.
+// The player journey through the site (R1, R2, R13, R14, R16, R17) on the real engine and game.
 
-const REAL_ENGINE = process.env.E2E_ENGINE === "real";
 let consoleErrors: string[] = [];
 
 test.beforeEach(async ({ page }) => {
@@ -11,13 +10,13 @@ test.beforeEach(async ({ page }) => {
   page.on("console", (m) => {
     // The browser logs these, but they are expected by contract: a signed-out GET /api/engine/me is 401,
     // GET /api/game/{rounds,runs}/current is 404 when there is none, and GET /api/engine/omens is a
-    // proposal the real engine may not serve yet (R17).
+    // proposal the engine may not serve yet (R17).
     const url = m.location().url;
     const is404 = m.text().includes("status of 404");
     const expected =
       (m.text().includes("status of 401") && url.endsWith("/api/engine/me")) ||
       (is404 && (url.endsWith("/api/game/rounds/current") || url.endsWith("/api/game/runs/current"))) ||
-      (REAL_ENGINE && is404 && url.endsWith("/api/engine/omens"));
+      (is404 && url.endsWith("/api/engine/omens"));
     if (m.type() === "error" && !expected) consoleErrors.push(m.text());
   });
 });
@@ -67,9 +66,10 @@ test("AC-1.1 a new account lands in the lobby with balance 0", async ({ page }) 
 
 test("AC-17.4 the lobby shows today's omen and streak", async ({ page }) => {
   await signIn(page);
-  const panel = page.getByRole("region", { name: "Today's omen" }).or(page.getByText("The omens are silent today."));
-  await expect(panel).toBeVisible();
-  if (!REAL_ENGINE) {
+  const omenPanel = page.getByRole("region", { name: "Today's omen" });
+  await expect(omenPanel.or(page.getByText("The omens are silent today."))).toBeVisible();
+  // Until the engine serves GET /api/engine/omens the lobby says the omens are silent.
+  if (await omenPanel.isVisible()) {
     await expect(page.getByTestId("omen-state")).toHaveText("Not yet fulfilled");
     await expect(page.getByText(/Streak: 0 days/)).toBeVisible();
   }

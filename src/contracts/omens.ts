@@ -1,5 +1,5 @@
 // Omens (R17, proposed by David, pending Edgar): one daily challenge about how you play, never how much.
-// Pure rules over the engine ledger, shared so the engine route and the site's fake cannot disagree.
+// Pure rules over the engine ledger, shared so the engine route and any other reader cannot disagree.
 // The reward is cosmetic; omens never move credits and never require a deposit or a bet size.
 import type { Transaction } from "./engine";
 

@@ -1,7 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Browser journey checks (`pnpm e2e`). Local only: CI runs `pnpm check`.
-// E2E_ENGINE=real runs the same journey against the real /api/engine/* routes instead of the fake.
+// Browser journey checks (`pnpm e2e`) on the real engine and game. Local only: CI runs `pnpm check`.
 // Next allows one `next dev` per project, so an already running `pnpm dev` on :3000 is reused as is.
 const PORT = 3000;
 
@@ -22,6 +21,7 @@ export default defineConfig({
     command: `pnpm dev --port ${PORT}`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: true,
-    env: { NEXT_PUBLIC_ENGINE_FAKE: process.env.E2E_ENGINE === "real" ? "0" : "1" },
+    // The session cookie needs a secret; a local-only one if .env does not set it.
+    env: { SESSION_SECRET: process.env.SESSION_SECRET ?? "e2e-local-only" },
   },
 });
