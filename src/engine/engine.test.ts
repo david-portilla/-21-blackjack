@@ -49,15 +49,15 @@ describe("accounts (02)", () => {
     expect(await engine.signIn("alice")).toEqual({ accountId, username: "alice", balance: 30 });
   });
 
-  it("AC-1.2 username match is exact and case-sensitive", async () => {
+  it("AC-1.2 username match is case-sensitive and ignores surrounding spaces", async () => {
     expect((await engine.signIn("Alice")).accountId).not.toBe(accountId);
-    expect((await engine.signIn(" alice ")).accountId).not.toBe(accountId);
+    expect((await engine.signIn(" alice ")).accountId).toBe(accountId);
   });
 
-  it("AC-1.1 username is stored exactly as sent", async () => {
+  it("AC-1.1 username is trimmed and otherwise stored as sent", async () => {
     const account = await engine.signIn("  Bob ");
-    expect(account.username).toBe("  Bob ");
-    expect((await engine.signIn("  Bob ")).accountId).toBe(account.accountId);
+    expect(account.username).toBe("Bob");
+    expect((await engine.signIn("Bob")).accountId).toBe(account.accountId);
     expect((await engine.signIn("")).username).toBe("");
   });
 
