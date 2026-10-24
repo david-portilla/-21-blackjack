@@ -19,11 +19,11 @@ Root `AGENTS.md` applies. Local rules below are written by the owner.
 - `HandView.status`: `stood` = player chose Stand; `busted` = over 21; `finished` = closed automatically (21, double, split aces). `outcome: 'blackjack'` only for a player natural; dealer natural is `loss`, both naturals `push`.
 - The UI shows each response at once; no dealer animation.
 - Run score: a round is won when its net is positive (mirror of AC-16.6). The run counts won rounds as `roundsWon`; push and net 0 count neither way. Renaming `roundsSurvived` and rewording AC-16.7 needs David's and Edgar's approval (shared contract and requirements).
-- `RoundStore` is in-memory only for now; AC-12.3 (survive a restart) is a known limitation until a Postgres store exists.
+- Storage: the game's own tables (`game_rounds`, `game_runs`) on the engine's SQLite connection (D-017), in `src/game/service/store.ts`. Tests use Edgar's real engine on `openDb(":memory:")` (D-018); no fake engine and no in-browser fake game.
 - Fixtures are the draw order as `Card[]`: player, dealer up, player, dealer hidden, then draws in order (split: left hand's new card, then right's). Rules take a `draw()` function.
 - Shuffle: Fisher–Yates with `crypto.getRandomValues`, once per round at creation. A deck or shuffle is injected only through `createGameService({ engine, store, shuffle })`; no route accepts one (AC-4.4).
 - UI: `BlackjackTable` is a client component calling the API via `src/game/ui/game-client.ts` (`fetch`, no extra dependency). One `crypto.randomUUID()` per bet submit, reused on retry. `onMoneyChanged()` after bet, double, split, settle and run close.
 - UI errors: `INSUFFICIENT_FUNDS` inline, state unchanged; `STALE_VERSION` render the returned `round` silently; `ROUND_IN_PROGRESS` load `/rounds/current` and resume; `UNAUTHENTICATED` left to the site; anything else shows `message` in `text-bj-ember`.
 - Bet form: number input defaulting to the last stake (`localStorage`, first time 10), a Deal button; action buttons only from the active hand's `allowedActions`.
 
-Deferred (owner's call, not yet decided): who provides a `FakeEngine` before Edgar's lands; the persistent `RoundStore` backend; recording these agreements in shared files.
+Deferred (owner's call, not yet decided): recording these agreements in shared files.

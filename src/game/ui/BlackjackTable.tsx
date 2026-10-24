@@ -5,8 +5,7 @@ import type { HandView, RoundView, RunView } from "@/contracts/round";
 import type { Action, Outcome } from "@/contracts/types";
 import { STARTING_CANDLES } from "../rules/run";
 import { Candles } from "./Candles";
-import { GameError } from "./game-client";
-import { gameClient } from "./game";
+import { GameError, httpGameClient as gameClient } from "./game-client";
 import { PlayingCard } from "./PlayingCard";
 
 const STAKE_KEY = "blackjack.lastStake";
