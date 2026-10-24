@@ -14,6 +14,8 @@ pnpm dev               # http://localhost:3000
 
 `pnpm check` runs typecheck, lint and tests (same as CI).
 
+`pnpm e2e` walks the player journey in Chromium at desktop and phone width (Playwright, local only; first time: `pnpm exec playwright install chromium`). It runs against the fake engine; `E2E_ENGINE=real pnpm e2e` runs it against the real `/api/engine/*` routes. Report: `pnpm exec playwright show-report`.
+
 ## Layout
 
 | Path | Owner | What |
@@ -36,5 +38,5 @@ Current state; updated before the demo (AC-15.4).
 - With `NEXT_PUBLIC_ENGINE_FAKE=1` the site runs on an in-browser fake engine: data lives in that browser's localStorage only, and nothing can be played (no bets, rounds or runs).
 - The game table is not mounted yet: `/play` shows a placeholder until `BlackjackTable` lands.
 - Candle runs (R16) depend on `GET /api/engine/runs` and `closeRun`, both still proposals.
-- The browser journey check is manual (see `src/web/AGENTS.md`); only unit tests run in `pnpm check` and CI.
-- The site is checked at desktop width and at 390 px; other sizes and browsers other than Chromium are untested.
+- The browser journey (`pnpm e2e`) runs locally, not in CI; CI runs `pnpm check` only.
+- The site is checked in Chromium at desktop width and at 390 px; other sizes and browsers are untested.

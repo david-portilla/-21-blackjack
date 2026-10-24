@@ -34,5 +34,5 @@ Root `AGENTS.md` applies. Local rules below are written by the owner.
 ## How to test
 
 - Unit: rules of the fake live in `src/web/fake-engine-client.test.ts`, tests named with the AC ID. Break the rule once to see the test fail before trusting it.
-- Browser: run `pnpm dev`, then walk the journey (sign in, deposit, play, history, reload) at desktop width and at 390 px; no console errors and no horizontal scroll.
-- Before switching `NEXT_PUBLIC_ENGINE_FAKE` to `0`, walk the same journey against Edgar's routes.
+- Browser: `pnpm e2e` (`e2e/site-journey.spec.ts`) walks the journey at desktop and 390 px and fails on console errors or horizontal scroll. New screen or flow: add a test there, named with the AC ID.
+- Before switching `NEXT_PUBLIC_ENGINE_FAKE` to `0`, run `E2E_ENGINE=real pnpm e2e` against Edgar's routes.
