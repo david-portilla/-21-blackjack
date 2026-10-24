@@ -9,9 +9,13 @@ test.beforeEach(async ({ page }) => {
   consoleErrors = [];
   page.on("pageerror", (e) => consoleErrors.push(e.message));
   page.on("console", (m) => {
-    // A signed-out GET /api/engine/me answers 401 by contract; the browser logs it, it is not an error.
-    const expected401 = m.text().includes("status of 401") && m.location().url.endsWith("/api/engine/me");
-    if (m.type() === "error" && !expected401) consoleErrors.push(m.text());
+    // The browser logs these, but they are expected: a signed-out GET /api/engine/me answers 401 by
+    // contract, and GET /api/engine/omens is a proposal the real engine may not serve yet (R17).
+    const url = m.location().url;
+    const expected =
+      (m.text().includes("status of 401") && url.endsWith("/api/engine/me")) ||
+      (REAL_ENGINE && m.text().includes("status of 404") && url.endsWith("/api/engine/omens"));
+    if (m.type() === "error" && !expected) consoleErrors.push(m.text());
   });
 });
 
@@ -56,6 +60,16 @@ test("AC-1.1 a new account lands in the lobby with balance 0", async ({ page }) 
   const name = await signIn(page);
   await expect(page.getByRole("heading", { name: `Welcome, ${name}` })).toBeVisible();
   await expect(balance(page)).toHaveText("0");
+});
+
+test("AC-17.4 the lobby shows today's omen and streak", async ({ page }) => {
+  await signIn(page);
+  const panel = page.getByRole("region", { name: "Today's omen" }).or(page.getByText("The omens are silent today."));
+  await expect(panel).toBeVisible();
+  if (!REAL_ENGINE) {
+    await expect(page.getByTestId("omen-state")).toHaveText("Not yet fulfilled");
+    await expect(page.getByText(/Streak: 0 days/)).toBeVisible();
+  }
 });
 
 test("AC-2.1 AC-14.2 a deposit updates the visible balance", async ({ page }) => {

@@ -1,3 +1,4 @@
+import type { OmenStatus } from "@/contracts/omens";
 import type { ApiError, ErrorCode } from "@/contracts/types";
 import type { Account, Run, Transaction } from "./engine-types";
 
@@ -17,6 +18,7 @@ export interface EngineClient {
   deposit(amount: number, idempotencyKey: string): Promise<Transaction>;
   transactions(): Promise<Transaction[]>;
   runs(): Promise<Run[]>;
+  omens(): Promise<OmenStatus>;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -50,6 +52,7 @@ export const httpEngineClient: EngineClient = {
     request("/api/engine/deposits", { method: "POST", body: JSON.stringify({ amount, idempotencyKey }) }),
   transactions: () => request("/api/engine/transactions"),
   runs: () => request("/api/engine/runs"),
+  omens: () => request("/api/engine/omens"),
 };
 
 export function messageOf(e: unknown): string {

@@ -112,6 +112,9 @@ Idempotency: `closeRun` with the same `runId` returns the stored run. `net` = PA
 | POST | `/api/engine/deposits` | `{ amount, idempotencyKey }` | `Transaction` (R2) |
 | GET | `/api/engine/transactions` | | `Transaction[]`, newest first (R13) |
 | GET | `/api/engine/runs` | | `Run[]`, newest first (R16) |
+| GET | `/api/engine/omens` | | `OmenStatus` (R17, proposed by David, pending Edgar) |
+
+`OmenStatus` and the rules live in `src/contracts/omens.ts`: the route is `Response.json(omenStatus(transactionsOfTheSessionAccount, new Date()))`, read-only, no new tables.
 
 ## Game: HTTP API (Heriberto)
 

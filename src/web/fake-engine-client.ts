@@ -1,6 +1,7 @@
 // In-browser stand-in for the engine HTTP API, so the site can be built before Edgar's routes exist.
 // Enabled with NEXT_PUBLIC_ENGINE_FAKE=1. Follows the same rules the real engine must follow (R1, R2, R11, R12).
 // debit, settle and closeRun mirror the in-process CasinoEngine; only the in-browser game emulation calls them.
+import { omenStatus } from "@/contracts/omens";
 import type { Outcome, TxKind } from "@/contracts/types";
 import { EngineError, type EngineClient } from "./engine-client";
 import type { Account, Run, Transaction } from "./engine-types";
@@ -112,6 +113,12 @@ export function createFakeEngineClient(store: () => KeyValueStore, now = () => n
       const s = load();
       const account = signedIn(s);
       return s.runs.filter((r) => r.accountId === account.accountId);
+    },
+
+    async omens() {
+      const s = load();
+      const account = signedIn(s);
+      return omenStatus(s.transactions.filter((t) => t.accountId === account.accountId), now());
     },
 
     // Check and debit in one step: on any error nothing changes (AC-9.4, AC-10.7).

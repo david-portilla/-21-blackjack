@@ -25,6 +25,14 @@ describe("fake engine client", () => {
     expect((await engine.signIn("leshy")).accountId).not.toBe(first.accountId);
   });
 
+  it("AC-17.4 serves today's omen from the account's own ledger", async () => {
+    await engine.signIn("player");
+    await engine.deposit(100, "d");
+    const status = await engine.omens();
+    expect(status).toMatchObject({ date: new Date().toISOString().slice(0, 10), fulfilled: false, streak: 0 });
+    expect(status.omen.title).toBeTruthy();
+  });
+
   it("signing out ends the session", async () => {
     await engine.signIn("player");
     await engine.signOut();

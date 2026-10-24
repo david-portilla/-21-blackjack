@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { useAccount, useRequireAccount } from "@/web/account-context";
 import { messageOf } from "@/web/engine-client";
 import { engineClient } from "@/web/engine";
+import { OmenPanel } from "@/web/omen-panel";
 
 export default function LobbyPage() {
   const account = useRequireAccount();
@@ -69,6 +70,8 @@ export default function LobbyPage() {
         </div>
         {error && <p className="text-sm text-bj-blood">{error}</p>}
       </form>
+
+      <OmenPanel />
 
       <Link href="/play" className="bj-button py-3 text-center text-lg">
         Take a seat at the table

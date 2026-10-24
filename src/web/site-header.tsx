@@ -5,10 +5,12 @@ import { useState } from "react";
 import { useAccount } from "./account-context";
 import { messageOf } from "./engine-client";
 import { engineClient } from "./engine";
+import { useOmen } from "./use-omen";
 
 export function SiteHeader() {
   const { account, error, setAccount } = useAccount();
   const [signOutError, setSignOutError] = useState<string | null>(null);
+  const { omen } = useOmen();
 
   // Clearing the account sends private pages back to sign-in (useRequireAccount).
   async function onSignOut() {
@@ -31,6 +33,11 @@ export function SiteHeader() {
           <Link href="/play" className="hover:text-bj-text">Play</Link>
           <Link href="/history" className="hover:text-bj-text">History</Link>
           <span className="text-bj-text">
+            {omen?.fulfilled && (
+              <span className="bj-candle-glow" title="Marked by today's omen" aria-label="Marked by today's omen">
+                ✶{" "}
+              </span>
+            )}
             {account.username} ·{" "}
             <strong data-testid="balance" className="bj-candle-glow font-mono">
               {account.balance}

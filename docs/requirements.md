@@ -118,6 +118,14 @@ Inspired by Inscryption, which is also the visual reference for the game and the
 - AC-16.8 Candles never change the balance.
 - AC-16.9 Ownership: the game keeps the live run (candles, rounds survived) and returns it in `RoundView`; when the run ends the game calls `engine.closeRun`, the engine computes the run's net from its transactions, stores it and serves it at `GET /api/engine/runs`; the site shows past runs and the best one.
 
+### R17 · Side quest: Omens (Edgar, David; proposed)
+A daily challenge about how you play, never about how much. Reward is cosmetic. Rules: `src/contracts/omens.ts`.
+- AC-17.1 Every day (UTC) has one omen, the same for every player, rotating through: win a hand you doubled, split a pair, draw a natural blackjack, tie the dealer.
+- AC-17.2 An omen is fulfilled only by that day's own play, read from the ledger; deposits and bet sizes never fulfil it.
+- AC-17.3 The streak counts consecutive days with the omen fulfilled, ending today, or yesterday while today is open. Missing a day only resets the count: no warnings, no penalty.
+- AC-17.4 The lobby shows today's omen, whether it is fulfilled and the streak; a fulfilled omen marks the player's name with ✶ for the day.
+- AC-17.5 Omens never move credits, never require a deposit and never depend on the amount bet.
+
 ## Open questions
 
 Resolved:

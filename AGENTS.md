@@ -26,6 +26,7 @@ Ask your human which owner they are if it is not obvious.
 
 - Do not edit files outside your owner's folders. If you need a change elsewhere, write the request (what, why, which AC) as a GitHub issue labelled `needs:<owner>` and tell your human.
 - Do not change `src/contracts/` inside a feature PR. Contract changes are their own PR, approved by every owner affected.
+- Engagement features (Omens, R17, `.scratch/omens/spec.md`) reward how people play, never how much: no credits as rewards, no deposit or bet-size conditions, no penalties or nags for missing a day.
 - If requirements, contracts and code disagree, or something is ambiguous, stop and ask your human. Do not pick an interpretation silently.
 - Hidden cards and the remaining deck never leave the server (AC-4.3).
 - Money moves only through the engine (`debit`, `settle`). Credits are integers.
