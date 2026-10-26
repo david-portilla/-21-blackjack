@@ -1,6 +1,6 @@
 # Contracts
 
-Status: **DRAFT v0**. Freezes as v1 on Friday together with `docs/requirements.md`. After freeze: additive changes only, by PR approved by every owner affected.
+Status: **Final, as delivered at the demo on 2026-10-24.** The TypeScript files in this folder are the source of truth; changes are their own PR, approved by every owner affected.
 
 This folder is the only place where the three parts meet. Types live here as TypeScript; this README is the human-readable version. If the README and the types disagree, fix one of them in the same PR.
 

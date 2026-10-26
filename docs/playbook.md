@@ -1,6 +1,6 @@
 # Playbook · how three people and three AI setups ship one casino
 
-Status: **DRAFT v0**. For humans first; agents read `AGENTS.md`.
+Status: **Closed after the demo on 2026-10-24.** Kept as the record of how the team worked; agents read `AGENTS.md`.
 
 ## The problem we are solving
 

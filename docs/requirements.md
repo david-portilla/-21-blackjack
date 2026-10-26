@@ -1,6 +1,6 @@
 # Requirements · Blackjack, your way
 
-Status: **DRAFT v0**. It becomes v1 when Edgar, Heriberto and David approve it. After v1, changes only by PR with the three approvals (see `docs/playbook.md`).
+Status: **Final, as delivered at the demo on 2026-10-24.** Open points are listed under "Open questions"; any change from here is a new decision in `docs/decisions.md`.
 
 This is the single "what". Every PR, test and demo check points to an ID here (`R7`, `AC-7.2`). If code and this file disagree, this file wins until a PR changes it. If this file is ambiguous, stop and ask: do not guess.
 

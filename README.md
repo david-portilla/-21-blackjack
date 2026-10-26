@@ -1,5 +1,7 @@
 # Blackjack, your way
 
+**Status:** delivered at the AI Challenge demo on 2026-10-24. The project is closed; `docs/demo.md` is the script used and `docs/decisions.md` the record of every decision.
+
 Team 2 entry for the Blackjack AI Challenge: a small casino with fictional credits. Three owners, one app.
 
 ## Start
